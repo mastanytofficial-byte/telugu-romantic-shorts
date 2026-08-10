@@ -13,190 +13,110 @@ const WORK_DIR = path.join(__dirname, 'work');
 const STATE_FILE = path.join(__dirname, 'last-article.json');
 const MIN_WORDS = 16;
 const MAX_WORDS = 36;
-const SHORT_DURATION = 12;
-
-const THEMES = [
-  'evariki cheppaleni prema', 'dooramaina vyakti gurthulu', 'oka mounamaina anubandham',
-  'varshamlo gurthocche vyakti', 'kalisi gadipina chinna kshanam',
-  'veedipoyina taruvatha migilina gurthulu', 'eduruchupu', 'manasulo dachukunna maata',
-  'modati parichayam gurthu', 'malli kalavalani korika',
-  'nishabdanga perigina anubandham', 'oka vyakti jeevithanni marchina vidhanam'
-];
+const VIDEO_SECONDS = 20;
 
 const FORBIDDEN = new Set([
-  'a','an','and','are','best','beautiful','because','be','but','deep','distance','feeling','feelings',
-  'first','forever','happy','heart','heartbeat','life','line','love','memories','memory','miss','missing',
-  'my','relationship','sad','special','story','true','waiting','you','your','is','was','were','the','to',
-  'of','in','on','for','with','from','this','that','me','mine','someone','one','side','long','old','night',
-  'rain','sorry','firstlove','lifeline','romantic','quote'
+  'a','an','and','are','best','beautiful','because','be','but','deep','distance',
+  'feeling','feelings','first','forever','happy','heart','heartbeat','life','line',
+  'love','memories','memory','miss','missing','my','relationship','sad','special',
+  'story','true','waiting','you','your','is','was','were','the','to','of','in','on',
+  'for','with','from','this','that','me','mine','someone','one','side','long','old',
+  'night','rain','sorry','romantic','quote'
 ]);
 
-function log(msg) { console.log(`[${new Date().toISOString()}] ${msg}`); }
-async function fetchWithTimeout(url, options = {}, timeoutMs = 30000) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try { return await fetch(url, { ...options, signal: controller.signal }); }
-  finally { clearTimeout(timer); }
-}
-function loadState() {
-  try {
-    if (!fs.existsSync(STATE_FILE)) return { runCount: 0, usedTitles: [] };
-    const s = JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'));
-    return { runCount: Number(s.runCount || 0), usedTitles: s.usedTitles || [] };
-  } catch (_) { return { runCount: 0, usedTitles: [] }; }
-}
-function saveState(title) {
-  const s = loadState();
-  fs.writeFileSync(STATE_FILE, JSON.stringify({ runCount: s.runCount + 1, usedTitles: [...s.usedTitles, title].slice(-50), lastDate: new Date().toISOString() }, null, 2));
-}
-function countWords(text) { return String(text || '').trim().split(/\s+/).filter(Boolean).length; }
-function forbiddenWords(text) {
-  const words = String(text || '').toLowerCase().match(/[a-z]+/g) || [];
-  return [...new Set(words.filter(w => FORBIDDEN.has(w)))];
-}
-function clean(text) { return String(text || '').replace(/^\s*[A-Z_]+\s*:\s*/i, '').replace(/["“”]/g, '').replace(/\s+/g, ' ').trim(); }
+const FALLBACKS = [
+  { title:'Nee Gurthulu', screen:'Nuvvu naatho leni prathi kshanam mounanga gadichina, nee gurthulu maatram naa manasulo mellaga palike oka madhuramaina maata la migilipoyayi', mood:'nostalgic longing', image:'lonely person beside rainy window at dusk, warm room light, quiet longing, cinematic romantic photography' },
+  { title:'Mounamlo Prema', screen:'Cheppaleni enno maatala madhya, nee kosam aagipoye naa mouname ninnu entha ga korukuntundo prathi roju naaku chebutune untundi', mood:'quiet affection', image:'person sitting quietly by window at sunset, soft golden light, peaceful romantic atmosphere, cinematic photography' },
+  { title:'Dooramaina Kshanam', screen:'Mana madhya dooram perigina prathi adugulo, kalisi gadipina chinna kshanalu naa venta nadusthu nannu malli nee daggariki teesukeltunnayi', mood:'bittersweet remembrance', image:'empty road at twilight with distant couple silhouette, nostalgic romantic mood, cinematic photography' },
+  { title:'Malli Kalavalani', screen:'Entha dooram vellina manasuki nachina vyakti gurthulu povu, avi marinta daggaravutayi endukante avi manasulo nijamaina chotunu pondutayi', mood:'hopeful reunion', image:'two people meeting on a quiet beach at sunset, warm hopeful romantic mood, cinematic photography' },
+  { title:'Oka Chinna Gnapakam', screen:'Nee tho gadipina oka chinna saayantram ippatiki naa manasulo velugula undi, aa kshanam gurthosthe chaalu naa mounam antha navvuthundi', mood:'warm nostalgia', image:'couple walking under evening lights, soft warm glow, tender nostalgic romance, cinematic photography' }
+];
 
-async function callGroq(prompt) {
-  const res = await fetchWithTimeout('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${GROQ_API_KEY}` },
-    body: JSON.stringify({ model: 'llama-3.3-70b-versatile', temperature: 0.9, messages: [{ role: 'user', content: prompt }] })
-  });
-  const data = await res.json();
-  if (!data.choices?.[0]?.message?.content) throw new Error('Groq returned no content: ' + JSON.stringify(data));
-  return data.choices[0].message.content.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+function log(x){ console.log(`[${new Date().toISOString()}] ${x}`); }
+async function get(url, options={}, timeout=30000){
+  const c=new AbortController(); const t=setTimeout(()=>c.abort(),timeout);
+  try{return await fetch(url,{...options,signal:c.signal});}finally{clearTimeout(t);}
+}
+function countWords(s){return String(s||'').trim().split(/\s+/).filter(Boolean).length;}
+function badWords(s){return [...new Set((String(s||'').toLowerCase().match(/[a-z]+/g)||[]).filter(w=>FORBIDDEN.has(w)))];}
+function validQuote(s){const n=countWords(s), bad=badWords(s); return n>=MIN_WORDS&&n<=MAX_WORDS&&bad.length===0&&!/#/.test(s);}
+function state(){try{return JSON.parse(fs.readFileSync(STATE_FILE,'utf8'));}catch{return {runCount:0};}}
+function saveState(title){const s=state();fs.writeFileSync(STATE_FILE,JSON.stringify({runCount:(s.runCount||0)+1,lastTitle:title,lastDate:new Date().toISOString()},null,2));}
+
+async function groq(prompt){
+  const r=await get('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${GROQ_API_KEY}`},body:JSON.stringify({model:'llama-3.3-70b-versatile',temperature:.85,messages:[{role:'user',content:prompt}]})});
+  const d=await r.json(); if(!d.choices?.[0]?.message?.content) throw new Error('Groq returned no content');
+  return d.choices[0].message.content.replace(/<think>[\s\S]*?<\/think>/gi,'').trim();
+}
+function parse(raw){
+  const title=raw.match(/TITLE:\s*(.+)/i)?.[1]?.trim()||'Telugu Romantic Quote';
+  const screen=(raw.match(/SCREEN:\s*([\s\S]*?)(?=\nMOOD:|\nIMAGE_PROMPT:|$)/i)?.[1]||'').replace(/["“”]/g,'').replace(/\s+/g,' ').trim();
+  const mood=raw.match(/MOOD:\s*(.+)/i)?.[1]?.trim()||'soft romantic nostalgia';
+  const image=raw.match(/IMAGE_PROMPT:\s*([\s\S]*?)(?=\n$|$)/i)?.[1]?.trim()||'';
+  return {title,screen,mood,image};
+}
+async function makeQuote(){
+  const themes=['dooramaina prema','mounamaina anubandham','gurthulu','eduruchupu','malli kalavalani korika','oka madhuramaina kshanam','cheppaleni anubhoothi'];
+  const theme=themes[state().runCount%themes.length];
+  const prompt=`Create ONE completely original romantic Telugu quote for a YouTube Short. Theme: ${theme}.
+SCREEN: exactly 16-36 words. Write ONLY Telugu vocabulary using English alphabet (Tenglish). ZERO English words. No hashtags. No movie lyrics, song lyrics, famous quotes or imitation. Natural Telugu, emotional, poetic, mature, simple and memorable. Do not write a short slogan. Make one flowing thought with 2-3 connected clauses.
+MOOD: give 2-4 English mood words only.
+IMAGE_PROMPT: write one detailed English prompt for ONE full-screen 9:16 cinematic photograph that exactly matches the quote's emotion and situation. Include subject, setting, lighting, atmosphere and emotion. No text, no watermark, no collage.
+Return exactly three lines: TITLE: ...\nSCREEN: ...\nMOOD: ...\nIMAGE_PROMPT: ...`;
+  for(let i=1;i<=5;i++){
+    const q=parse(await groq(prompt+(i>1?'\nPrevious attempt was invalid. Write a completely new 20-30 word Telugu thought, not a shorter version.':'')));
+    log(`Quote attempt ${i}: ${countWords(q.screen)} words, valid=${validQuote(q.screen)}`);
+    if(validQuote(q.screen)&&q.image) return q;
+  }
+  const f=FALLBACKS[state().runCount%FALLBACKS.length];
+  log(`Groq did not pass validation; using curated original fallback: ${f.title}`);
+  return f;
 }
 
-function parse(raw) {
-  const get = key => raw.match(new RegExp(`^${key}:\\s*(.+)$`, 'im'))?.[1]?.trim() || '';
-  return {
-    title: get('TITLE'),
-    screen: clean(get('SCREEN')),
-    imagePrompt: get('IMAGE_PROMPT'),
-    bgmMood: get('BGM_MOOD'),
-    bgmTempo: get('BGM_TEMPO'),
-    bgmInstrument: get('BGM_INSTRUMENT')
+async function makeImage(prompt){
+  fs.mkdirSync(WORK_DIR,{recursive:true});
+  const enhanced=`${prompt}, vertical 9:16, cinematic still photograph, realistic natural human emotion, beautiful composition, soft depth of field, subtle film grain, no words, no letters, no logo, no watermark, no collage`;
+  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(enhanced)}?width=1080&height=1920&nologo=true`;
+  const r=await get(url,{},60000); if(!r.ok) throw new Error(`AI image failed HTTP ${r.status}`);
+  const b=Buffer.from(await r.arrayBuffer()); if(b.length<10000) throw new Error('AI image response too small');
+  const p=path.join(WORK_DIR,'background.jpg'); fs.writeFileSync(p,b); log('Created ONE quote-specific full-screen AI image.'); return p;
+}
+
+function wav(file,duration,mood){
+  const sr=44100,total=Math.ceil(sr*duration),a=new Int16Array(total*2);
+  const presets={
+    'quiet affection':[261.63,329.63,392], 'tender longing':[220,261.63,329.63],
+    'bittersweet remembrance':[196,246.94,293.66], 'warm nostalgia':[174.61,220,261.63],
+    'hopeful reunion':[261.63,329.63,440]
   };
-}
-
-async function generateQuote(runCount, usedTitles) {
-  const theme = THEMES[runCount % THEMES.length];
-  const avoid = usedTitles.slice(-8).join(' | ');
-  const prompt = `Create ONE completely original romantic Telugu thought for a 12-second YouTube Short.\nTHEME: ${theme}\n\nSCREEN: 16 to 36 words exactly. Natural Telugu vocabulary written only in English letters (Tenglish). Emotional, poetic, mature and deeply relatable. No English vocabulary, no hashtags, no CTA, no movie/song lyrics, no famous quote. Avoid these English words especially: love, heart, life, feeling, memory, miss, beautiful, special, forever, waiting, relationship, romantic, quote.\n\nIMAGE_PROMPT: Write a detailed English prompt for ONE full-screen 9:16 cinematic photographic image that visually expresses the exact emotion and situation of the SCREEN. The image must feel intimate, realistic and emotionally specific, not generic. No text, no letters, no watermark, no collage, no split screen.\n\nBGM_MOOD: Choose one precise mood such as tender longing, quiet heartbreak, warm nostalgia, hopeful reunion, peaceful affection, bittersweet remembrance.\nBGM_TEMPO: slow, medium-slow, or gentle-medium.\nBGM_INSTRUMENT: choose a minimal instrumental palette such as soft piano, piano and ambient pad, acoustic guitar and pad, felt piano and strings, or flute and piano.\n\nReturn exactly six lines:\nTITLE: short Tenglish title\nSCREEN: Tenglish quote\nIMAGE_PROMPT: English cinematic image prompt\nBGM_MOOD: precise mood\nBGM_TEMPO: tempo\nBGM_INSTRUMENT: instrumental palette\n\nPreviously used titles to avoid: ${avoid}`;
-
-  for (let attempt = 1; attempt <= 5; attempt++) {
-    const q = parse(await callGroq(prompt + `\nAttempt ${attempt}: generate a completely NEW thought.`));
-    const n = countWords(q.screen);
-    const bad = forbiddenWords(q.screen);
-    if (n >= MIN_WORDS && n <= MAX_WORDS && !bad.length && q.imagePrompt && q.bgmMood && q.bgmTempo && q.bgmInstrument) {
-      log(`Quote valid: ${n} words | mood=${q.bgmMood} | tempo=${q.bgmTempo} | instrument=${q.bgmInstrument}`);
-      return q;
-    }
-    log(`Quote rejected: ${n} words; forbidden=${bad.join(', ')}`);
+  const key=Object.keys(presets).find(k=>mood.toLowerCase().includes(k.split(' ')[1]))||'quiet affection';
+  const notes=presets[key];
+  for(let i=0;i<total;i++){
+    const t=i/sr, chord=notes[Math.floor(t/4)%notes.length], fade=Math.min(1,t/1.5,(duration-t)/1.5);
+    const pad=.012*Math.sin(2*Math.PI*chord*t)+.007*Math.sin(2*Math.PI*(chord*2)*t);
+    const melody=.006*Math.sin(2*Math.PI*(chord*(1+(Math.floor(t*2)%3)*.25))*t);
+    const s=Math.round((pad+melody)*Math.max(0,fade)*32767); a[i*2]=s;a[i*2+1]=s;
   }
-  throw new Error('Could not generate a valid romantic quote.');
+  const h=Buffer.alloc(44+a.length*2); h.write('RIFF',0);h.writeUInt32LE(36+a.length*2,4);h.write('WAVE',8);h.write('fmt ',12);h.writeUInt32LE(16,16);h.writeUInt16LE(1,20);h.writeUInt16LE(2,22);h.writeUInt32LE(sr,24);h.writeUInt32LE(sr*4,28);h.writeUInt16LE(4,32);h.writeUInt16LE(16,34);h.write('data',36);h.writeUInt32LE(a.length*2,40);for(let i=0;i<a.length;i++)h.writeInt16LE(a[i],44+i*2);fs.writeFileSync(file,h);return file;
 }
-
-async function generateFullScreenImage(imagePrompt) {
-  const enhanced = `${imagePrompt}, cinematic romantic photography, emotionally accurate, realistic human emotion, natural skin and lighting, shallow depth of field, subtle film grain, vertical 9:16 composition, subject positioned safely away from center text area, no text, no typography, no watermark, no logo`;
-  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(enhanced)}?width=1080&height=1920&nologo=true`;
-  const res = await fetchWithTimeout(url, {}, 60000);
-  if (!res.ok) throw new Error(`AI image generation failed HTTP ${res.status}`);
-  const buf = Buffer.from(await res.arrayBuffer());
-  if (buf.length < 10000) throw new Error('Generated image is too small');
-  const out = path.join(WORK_DIR, 'background.jpg');
-  fs.writeFileSync(out, buf);
-  log('Generated one full-screen emotion-matched AI image.');
-  return out;
-}
-
-function writeWav(filePath, samples, sampleRate = 44100, channels = 2) {
-  const dataSize = samples.length * 2;
-  const b = Buffer.alloc(44 + dataSize);
-  b.write('RIFF',0); b.writeUInt32LE(36+dataSize,4); b.write('WAVE',8); b.write('fmt ',12); b.writeUInt32LE(16,16);
-  b.writeUInt16LE(1,20); b.writeUInt16LE(channels,22); b.writeUInt32LE(sampleRate,24); b.writeUInt32LE(sampleRate*channels*2,28);
-  b.writeUInt16LE(channels*2,32); b.writeUInt16LE(16,34); b.write('data',36); b.writeUInt32LE(dataSize,40);
-  for (let i=0;i<samples.length;i++) b.writeInt16LE(Math.max(-32768,Math.min(32767,samples[i])),44+i*2);
-  fs.writeFileSync(filePath,b);
-}
-
-function moodSettings(mood) {
-  const m = mood.toLowerCase();
-  if (m.includes('heartbreak') || m.includes('sad') || m.includes('longing')) return { root:220, chords:[[220,261.63,329.63],[196,246.94,293.66],[174.61,220,261.63],[196,246.94,293.66]], melody:[329.63,293.66,261.63,246.94], pulse:0.28 };
-  if (m.includes('nostalgia') || m.includes('remembrance') || m.includes('bittersweet')) return { root:196, chords:[[196,246.94,293.66],[174.61,220,261.63],[220,261.63,329.63],[196,246.94,293.66]], melody:[293.66,329.63,261.63,246.94], pulse:0.32 };
-  if (m.includes('hope') || m.includes('reunion')) return { root:261.63, chords:[[261.63,329.63,392],[220,261.63,329.63],[174.61,220,261.63],[196,246.94,293.66]], melody:[392,329.63,440,392], pulse:0.42 };
-  return { root:261.63, chords:[[261.63,329.63,392],[220,261.63,329.63],[174.61,220,261.63],[196,246.94,293.66]], melody:[392,329.63,261.63,329.63], pulse:0.35 };
-}
-
-function generateEmotionMatchedBGM(duration, mood, tempo, instrument, filePath) {
-  const sr = 44100, total = Math.ceil(duration*sr), samples = new Int16Array(total*2), s = moodSettings(mood);
-  const beat = tempo.toLowerCase().includes('slow') ? 2.4 : tempo.toLowerCase().includes('medium') ? 1.7 : 2.0;
-  const chordLen = beat * 2;
-  const pianoLike = instrument.toLowerCase().includes('piano');
-  for (let i=0;i<total;i++) {
-    const t=i/sr, chord=s.chords[Math.floor(t/chordLen)%s.chords.length], local=t%chordLen;
-    const fade=Math.min(1,t/1.2,(duration-t)/1.0); let v=0;
-    for (let n=0;n<chord.length;n++) {
-      const f=chord[n], env=Math.exp(-2.8*local/chordLen), amp=(pianoLike?0.012:0.009);
-      v += Math.sin(2*Math.PI*f*t)*amp*env;
-      v += Math.sin(2*Math.PI*f*2*t)*(amp*0.18)*env;
-    }
-    const mi=Math.floor(t/beat)%s.melody.length, mf=s.melody[mi];
-    const melLocal=t%beat, melEnv=Math.exp(-3.2*melLocal/beat);
-    v += Math.sin(2*Math.PI*mf*t)*0.008*melEnv;
-    v += Math.sin(2*Math.PI*s.root*t)*0.003;
-    v += Math.sin(2*Math.PI*0.5*t)*s.pulse*0.002;
-    v*=Math.max(0,Math.min(1,fade));
-    const x=Math.round(v*32767); samples[i*2]=x; samples[i*2+1]=x;
-  }
-  writeWav(filePath,samples,sr,2); return filePath;
-}
-
-function wrapQuote(text, maxChars=30) {
-  const words=text.split(/\s+/).filter(Boolean), lines=[]; let line='';
-  for(const word of words){const next=line?`${line} ${word}`:word;if(line&&next.length>maxChars){lines.push(line);line=word;}else line=next;}
-  if(line)lines.push(line); return lines.join('\\n');
-}
-
-function buildVideo(imagePath, bgmPath, screenText) {
-  const out=path.join(WORK_DIR,'output.mp4');
+function quoteLines(text,max=31){const out=[];let line='';for(const w of text.split(/\s+/)){const n=line?`${line} ${w}`:w;if(line&&n.length>max){out.push(line);line=w}else line=n}if(line)out.push(line);return out.join('\\n');}
+function render(image,bgm,quote){
+  const out=path.join(WORK_DIR,'output.mp4'),txt=path.join(WORK_DIR,'quote.txt');fs.writeFileSync(txt,quoteLines(quote),'utf8');
   const font='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf';
-  const textFile=path.join(WORK_DIR,'quote.txt'); fs.writeFileSync(textFile,wrapQuote(screenText),'utf8');
-  const vf=[
-    'scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920',
-    `zoompan=z='min(zoom+0.0008,1.06)':d=${SHORT_DURATION*25}:s=1080x1920:fps=25`,
-    'eq=contrast=1.03:saturation=1.05',
-    'vignette=PI/7',
-    `drawbox=x=55:y=620:w=iw-110:h=680:color=black@0.24:t=fill`,
-    `drawtext=fontfile='${font}':textfile='${textFile}':fontcolor=white:fontsize=42:line_spacing=16:x=(w-text_w)/2:y=(h-text_h)/2:shadowcolor=black@0.95:shadowx=2:shadowy=3`,
-    `drawtext=fontfile='${font}':text='TELUGU ECHO':fontcolor=white@0.60:fontsize=20:x=(w-text_w)/2:y=h-70`,
-    'fade=t=in:st=0:d=0.6',
-    `fade=t=out:st=${SHORT_DURATION-0.7}:d=0.7`
-  ].join(',');
-  const cmd=`ffmpeg -y -loop 1 -i "${imagePath}" -i "${bgmPath}" -filter_complex "[1:a]volume=0.42,afade=t=in:st=0:d=1,afade=t=out:st=${SHORT_DURATION-1}:d=1[a]" -map 0:v -map "[a]" -vf "${vf}" -t ${SHORT_DURATION} -r 25 -c:v libx264 -pix_fmt yuv420p -c:a aac -b:a 128k -shortest "${out}"`;
-  execSync(cmd,{stdio:'inherit'}); return out;
+  const vf=`scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,zoompan=z='min(zoom+0.0009,1.08)':d=500:s=1080x1920:fps=25,drawbox=x=55:y=650:w=970:h=620:color=black@0.26:t=fill,drawtext=fontfile='${font}':textfile='${txt}':fontcolor=white:fontsize=46:line_spacing=18:x=(w-text_w)/2:y=(h-text_h)/2:shadowcolor=black@0.9:shadowx=2:shadowy=3`;
+  execSync(`ffmpeg -y -loop 1 -i "${image}" -i "${bgm}" -vf "${vf}" -t ${VIDEO_SECONDS} -map 0:v -map 1:a -c:v libx264 -preset veryfast -crf 20 -pix_fmt yuv420p -c:a aac -b:a 128k -shortest "${out}"`,{stdio:'inherit'});return out;
 }
-
-function sanitize(text,max){return String(text||'').replace(/[\x00-\x1F\x7F-\x9F]/g,'').slice(0,max).trim();}
-async function upload(videoPath,title,description){
-  const oauth=new google.auth.OAuth2(YT_CLIENT_ID,YT_CLIENT_SECRET); oauth.setCredentials({refresh_token:YT_REFRESH_TOKEN});
-  const youtube=google.youtube({version:'v3',auth:oauth});
-  const res=await youtube.videos.insert({part:['snippet','status'],requestBody:{snippet:{title:sanitize(title,95),description:sanitize(description,4900),tags:['telugu quotes','telugu romantic quotes','tenglish quotes','telugu shorts'],categoryId:'22'},status:{privacyStatus:'public',selfDeclaredMadeForKids:false}},media:{body:fs.createReadStream(videoPath)}});
-  log(`Uploaded: https://www.youtube.com/watch?v=${res.data.id}`);
+async function upload(video,title,quote){
+  const auth=new google.auth.OAuth2(YT_CLIENT_ID,YT_CLIENT_SECRET);auth.setCredentials({refresh_token:YT_REFRESH_TOKEN});
+  const yt=google.youtube({version:'v3',auth});
+  const r=await yt.videos.insert({part:['snippet','status'],requestBody:{snippet:{title:title.slice(0,95),description:`${quote}\n\nOriginal Telugu romantic quote with a quote-specific cinematic image and original instrumental BGM.`,tags:['telugu quotes','telugu romantic quotes','tenglish quotes','romantic shorts','telugu shorts'],categoryId:'22'},status:{privacyStatus:'public',selfDeclaredMadeForKids:false}},media:{body:fs.createReadStream(video)}});
+  log(`Uploaded: https://www.youtube.com/watch?v=${r.data.id}`);
 }
-
 async function main(){
   fs.mkdirSync(WORK_DIR,{recursive:true});
-  for(const [name,value] of Object.entries({GROQ_API_KEY,PEXELS_API_KEY,YT_CLIENT_ID,YT_CLIENT_SECRET,YT_REFRESH_TOKEN})) if(!value) throw new Error(`${name} is missing`);
-  const state=loadState();
-  const quote=await generateQuote(state.runCount,state.usedTitles);
-  log(`SCREEN (${countWords(quote.screen)} words): ${quote.screen}`);
-  log(`IMAGE: ${quote.imagePrompt}`);
-  log(`BGM: ${quote.bgmMood} | ${quote.bgmTempo} | ${quote.bgmInstrument}`);
-  const image=await generateFullScreenImage(quote.imagePrompt);
-  const bgm=generateEmotionMatchedBGM(SHORT_DURATION,quote.bgmMood,quote.bgmTempo,quote.bgmInstrument,path.join(WORK_DIR,'romantic_bgm.wav'));
-  const video=buildVideo(image,bgm,quote.screen);
-  await upload(video,quote.title,`${quote.screen}\n\nOriginal romantic Telugu quote Short.\nEmotion-matched cinematic image and original instrumental BGM.`);
-  saveState(quote.title); log('Done. No voice/TTS is used.');
+  for(const [n,v] of Object.entries({GROQ_API_KEY,PEXELS_API_KEY,YT_CLIENT_ID,YT_CLIENT_SECRET,YT_REFRESH_TOKEN}))if(!v)throw new Error(`${n} is missing`);
+  log('Run: quote + ONE full-screen matching image + ONE matching original BGM. NO VOICE.');
+  const q=await makeQuote();log(`SCREEN (${countWords(q.screen)} words): ${q.screen}`);log(`MOOD: ${q.mood}`);log(`IMAGE: ${q.image}`);
+  const image=await makeImage(q.image);const bgm=wav(path.join(WORK_DIR,'original_bgm.wav'),VIDEO_SECONDS,q.mood);const video=render(image,bgm,q.screen);await upload(video,q.title,q.screen);saveState(q.title);log('Done.');
 }
-main().catch(err=>{console.error('FAILED:',err.stack||err);process.exit(1);});
+main().catch(e=>{console.error('FAILED:',e.stack||e);process.exit(1);});
