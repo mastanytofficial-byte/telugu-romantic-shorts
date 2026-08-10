@@ -8,10 +8,15 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: romantic-quote-short
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -22,11 +27,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
+          cache: 'npm'
 
       - name: Install ffmpeg
         run: |
           sudo apt-get update -o Acquire::Retries=3
           sudo apt-get install -y --no-install-recommends ffmpeg
+
+      - name: Verify ffmpeg
+        run: ffmpeg -version
 
       - name: Install dependencies
         run: npm install
@@ -34,9 +43,10 @@ jobs:
       - name: Verify source
         run: node --check romantic_simple.js
 
-      - name: Generate and upload
+      - name: Generate and upload romantic Short
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
