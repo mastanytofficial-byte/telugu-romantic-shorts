@@ -1,0 +1,12 @@
+{
+  "name": "telugu-romantic-shorts",
+  "version": "1.0.0",
+  "description": "Automated Telugu romantic quote YouTube Shorts generator",
+  "main": "romantic_simple.js",
+  "scripts": {
+    "start": "node romantic_simple.js"
+  },
+  "dependencies": {
+    "googleapis": "^140.0.0"
+  }
+}
