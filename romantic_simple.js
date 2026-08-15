@@ -4,7 +4,6 @@ const { execSync } = require('child_process');
 const { google } = require('googleapis');
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
-const PEXELS_API_KEY = process.env.PEXELS_API_KEY;
 const YT_CLIENT_ID = process.env.YT_CLIENT_ID;
 const YT_CLIENT_SECRET = process.env.YT_CLIENT_SECRET;
 const YT_REFRESH_TOKEN = process.env.YT_REFRESH_TOKEN;
@@ -62,7 +61,7 @@ async function makeQuote(){
 SCREEN: exactly 16-36 words. Write ONLY Telugu vocabulary using English alphabet (Tenglish). ZERO English words. No hashtags. No movie lyrics, song lyrics, famous quotes or imitation. Natural Telugu, emotional, poetic, mature, simple and memorable. Do not write a short slogan. Make one flowing thought with 2-3 connected clauses.
 MOOD: give 2-4 English mood words only.
 IMAGE_PROMPT: write one detailed English prompt for ONE full-screen 9:16 cinematic photograph that exactly matches the quote's emotion and situation. Include subject, setting, lighting, atmosphere and emotion. No text, no watermark, no collage.
-Return exactly three lines: TITLE: ...\nSCREEN: ...\nMOOD: ...\nIMAGE_PROMPT: ...`;
+Return exactly four lines: TITLE: ...\nSCREEN: ...\nMOOD: ...\nIMAGE_PROMPT: ...`;
   for(let i=1;i<=5;i++){
     const q=parse(await groq(prompt+(i>1?'\nPrevious attempt was invalid. Write a completely new 20-30 word Telugu thought, not a shorter version.':'')));
     log(`Quote attempt ${i}: ${countWords(q.screen)} words, valid=${validQuote(q.screen)}`);
@@ -114,7 +113,7 @@ async function upload(video,title,quote){
 }
 async function main(){
   fs.mkdirSync(WORK_DIR,{recursive:true});
-  for(const [n,v] of Object.entries({GROQ_API_KEY,PEXELS_API_KEY,YT_CLIENT_ID,YT_CLIENT_SECRET,YT_REFRESH_TOKEN}))if(!v)throw new Error(`${n} is missing`);
+  for(const [n,v] of Object.entries({GROQ_API_KEY,YT_CLIENT_ID,YT_CLIENT_SECRET,YT_REFRESH_TOKEN}))if(!v)throw new Error(`${n} is missing`);
   log('Run: quote + ONE full-screen matching image + ONE matching original BGM. NO VOICE.');
   const q=await makeQuote();log(`SCREEN (${countWords(q.screen)} words): ${q.screen}`);log(`MOOD: ${q.mood}`);log(`IMAGE: ${q.image}`);
   const image=await makeImage(q.image);const bgm=wav(path.join(WORK_DIR,'original_bgm.wav'),VIDEO_SECONDS,q.mood);const video=render(image,bgm,q.screen);await upload(video,q.title,q.screen);saveState(q.title);log('Done.');
