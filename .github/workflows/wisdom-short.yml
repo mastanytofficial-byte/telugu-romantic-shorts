@@ -38,12 +38,20 @@ jobs:
           ffmpeg -version
           test -f /usr/share/fonts/truetype/teluguvijayam/ramabhadra.ttf
 
+      - name: Install Pillow (Telugu text shaping via raqm)
+        timeout-minutes: 3
+        run: |
+          python3 -m pip install --quiet --break-system-packages pillow
+          python3 -c "from PIL import features; assert features.check('raqm'), 'Pillow built without raqm (complex text shaping)'"
+
       - name: Install dependencies
         timeout-minutes: 3
         run: npm install --no-audit --no-fund
 
       - name: Verify source
-        run: node --check wisdom_simple.js
+        run: |
+          node --check wisdom_simple.js
+          python3 -m py_compile render_text.py
 
       - name: Generate and upload (private, pending review)
         timeout-minutes: 15

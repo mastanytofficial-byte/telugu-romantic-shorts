@@ -12,7 +12,7 @@ const WORK_DIR = path.join(__dirname, 'work');
 const STATE_FILE = path.join(__dirname, 'last-article.json');
 const REVIEW_FILE = path.join(WORK_DIR, 'review.txt');
 const BGM_FILE = path.join(__dirname, 'assets', 'bgm.mp3');
-const TELUGU_FONT = '/usr/share/fonts/truetype/teluguvijayam/ramabhadra.ttf';
+const RENDER_TEXT_SCRIPT = path.join(__dirname, 'render_text.py');
 const MIN_WORDS = 16;
 const MAX_WORDS = 36;
 const VIDEO_SECONDS = 20;
@@ -80,11 +80,12 @@ async function makeImage(prompt){
   const p=path.join(WORK_DIR,'background.jpg'); fs.writeFileSync(p,b); log('Created ONE quote-specific full-screen AI image.'); return p;
 }
 
-function quoteLines(text,max=31){const out=[];let line='';for(const w of text.split(/\s+/)){const n=line?`${line} ${w}`:w;if(line&&n.length>max){out.push(line);line=w}else line=n}if(line)out.push(line);return out.join('\n');}
 function render(image,quote){
-  const out=path.join(WORK_DIR,'output.mp4'),txt=path.join(WORK_DIR,'quote.txt');fs.writeFileSync(txt,quoteLines(quote),'utf8');
-  const vf=`scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,zoompan=z='min(zoom+0.0009,1.08)':d=500:s=1080x1920:fps=25,drawbox=x=55:y=650:w=970:h=620:color=black@0.26:t=fill,drawtext=fontfile='${TELUGU_FONT}':textfile='${txt}':fontcolor=white:fontsize=46:line_spacing=18:x=(w-text_w)/2:y=(h-text_h)/2:shadowcolor=black@0.9:shadowx=2:shadowy=3`;
-  execSync(`ffmpeg -y -loop 1 -i "${image}" -i "${BGM_FILE}" -vf "${vf}" -t ${VIDEO_SECONDS} -map 0:v -map 1:a -c:v libx264 -preset veryfast -crf 20 -pix_fmt yuv420p -c:a aac -b:a 128k -shortest "${out}"`,{stdio:'inherit'});return out;
+  const out=path.join(WORK_DIR,'output.mp4'),txt=path.join(WORK_DIR,'quote.txt'),overlay=path.join(WORK_DIR,'overlay.png');
+  fs.writeFileSync(txt,quote,'utf8');
+  execSync(`python3 "${RENDER_TEXT_SCRIPT}" "${txt}" "${overlay}"`,{stdio:'inherit'});
+  const fc=`[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,zoompan=z='min(zoom+0.0009,1.08)':d=500:s=1080x1920:fps=25[bg];[bg][2:v]overlay=0:0:format=auto[v]`;
+  execSync(`ffmpeg -y -loop 1 -i "${image}" -i "${BGM_FILE}" -loop 1 -i "${overlay}" -filter_complex "${fc}" -map "[v]" -map 1:a -t ${VIDEO_SECONDS} -c:v libx264 -preset veryfast -crf 20 -pix_fmt yuv420p -c:a aac -b:a 128k -shortest "${out}"`,{stdio:'inherit'});return out;
 }
 async function upload(video,title,quote){
   const auth=new google.auth.OAuth2(YT_CLIENT_ID,YT_CLIENT_SECRET);auth.setCredentials({refresh_token:YT_REFRESH_TOKEN});
