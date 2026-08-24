@@ -27,14 +27,16 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Install ffmpeg
+      - name: Install ffmpeg and Telugu font
         timeout-minutes: 3
         run: |
           sudo apt-get update -o Acquire::Retries=3
-          sudo apt-get install -y --no-install-recommends ffmpeg
+          sudo apt-get install -y --no-install-recommends ffmpeg fonts-teluguvijayam
 
-      - name: Verify ffmpeg
-        run: ffmpeg -version
+      - name: Verify ffmpeg and font
+        run: |
+          ffmpeg -version
+          test -f /usr/share/fonts/truetype/teluguvijayam/ramabhadra.ttf
 
       - name: Install dependencies
         timeout-minutes: 3

@@ -2,8 +2,9 @@
 
 Automated Telugu life-wisdom/motivational quote YouTube Shorts generator.
 
-Each run generates one original Tenglish wisdom quote (Groq LLM), a matching
-AI image, an original instrumental BGM, and renders/uploads a 9:16 video.
+Each run generates one original quote in native Telugu script (Groq LLM), a
+matching AI image, and renders/uploads a 9:16 video over a fixed channel BGM
+(`assets/bgm.mp3`, a royalty-free YouTube Audio Library track trimmed to 20s).
 
 **Human review gate:** videos upload as **Private**. Nothing goes public
 automatically — check the quote/image/audio in YouTube Studio and switch
