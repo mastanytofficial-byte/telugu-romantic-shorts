@@ -1,10 +1,10 @@
 {
-  "name": "telugu-romantic-shorts",
+  "name": "telugu-wisdom-shorts",
   "version": "1.0.0",
-  "description": "Automated Telugu romantic quote YouTube Shorts generator",
-  "main": "romantic_simple.js",
+  "description": "Automated Telugu life-wisdom quote YouTube Shorts generator",
+  "main": "wisdom_simple.js",
   "scripts": {
-    "start": "node romantic_simple.js"
+    "start": "node wisdom_simple.js"
   },
   "dependencies": {
     "googleapis": "^140.0.0"

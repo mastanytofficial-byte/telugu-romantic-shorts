@@ -10,25 +10,29 @@ const YT_REFRESH_TOKEN = process.env.YT_REFRESH_TOKEN;
 
 const WORK_DIR = path.join(__dirname, 'work');
 const STATE_FILE = path.join(__dirname, 'last-article.json');
+const REVIEW_FILE = path.join(WORK_DIR, 'review.txt');
 const MIN_WORDS = 16;
 const MAX_WORDS = 36;
 const VIDEO_SECONDS = 20;
 
 const FORBIDDEN = new Set([
-  'a','an','and','are','best','beautiful','because','be','but','deep','distance',
-  'feeling','feelings','first','forever','happy','heart','heartbeat','life','line',
-  'love','memories','memory','miss','missing','my','relationship','sad','special',
-  'story','true','waiting','you','your','is','was','were','the','to','of','in','on',
-  'for','with','from','this','that','me','mine','someone','one','side','long','old',
-  'night','rain','sorry','romantic','quote'
+  'a','an','and','are','be','but','is','was','were','the','to','of','in','on',
+  'for','with','from','this','that','me','mine','my','your','you','one','someone',
+  'best','true','real','life','love','heart','story','special','because','first',
+  'success','successful','hard','work','working','dream','dreams','goal','goals',
+  'effort','courage','patience','discipline','focus','mind','power','strength',
+  'believe','achieve','achievement','growth','failure','fail','mistake','mistakes',
+  'lesson','lessons','path','journey','time','change','better','inner','control',
+  'peace','calm','brave','strong','motivation','motivational','inspire','inspiration',
+  'quote','quotes'
 ]);
 
 const FALLBACKS = [
-  { title:'Nee Gurthulu', screen:'Nuvvu naatho leni prathi kshanam mounanga gadichina, nee gurthulu maatram naa manasulo mellaga palike oka madhuramaina maata la migilipoyayi', mood:'nostalgic longing', image:'lonely person beside rainy window at dusk, warm room light, quiet longing, cinematic romantic photography' },
-  { title:'Mounamlo Prema', screen:'Cheppaleni enno maatala madhya, nee kosam aagipoye naa mouname ninnu entha ga korukuntundo prathi roju naaku chebutune untundi', mood:'quiet affection', image:'person sitting quietly by window at sunset, soft golden light, peaceful romantic atmosphere, cinematic photography' },
-  { title:'Dooramaina Kshanam', screen:'Mana madhya dooram perigina prathi adugulo, kalisi gadipina chinna kshanalu naa venta nadusthu nannu malli nee daggariki teesukeltunnayi', mood:'bittersweet remembrance', image:'empty road at twilight with distant couple silhouette, nostalgic romantic mood, cinematic photography' },
-  { title:'Malli Kalavalani', screen:'Entha dooram vellina manasuki nachina vyakti gurthulu povu, avi marinta daggaravutayi endukante avi manasulo nijamaina chotunu pondutayi', mood:'hopeful reunion', image:'two people meeting on a quiet beach at sunset, warm hopeful romantic mood, cinematic photography' },
-  { title:'Oka Chinna Gnapakam', screen:'Nee tho gadipina oka chinna saayantram ippatiki naa manasulo velugula undi, aa kshanam gurthosthe chaalu naa mounam antha navvuthundi', mood:'warm nostalgia', image:'couple walking under evening lights, soft warm glow, tender nostalgic romance, cinematic photography' }
+  { title:'Modati Adugu', screen:'Kashtapadina prathi kshanam vrudha kaadu, aa kastam venaka dagi unna anubhavam manaki kotha balanni istu mundhuku nadipistundi', mood:'quiet determination', image:'lone figure taking the first step onto a misty mountain trail at sunrise, soft golden light, quiet determined atmosphere, cinematic photography, vertical composition' },
+  { title:'Kotha Paatam', screen:'Prathi vairalyam venuka oka kotha paatam dagi untundi, aa paatanni artham chesukunna prathi okkaru marintha balamga mari mundhuku sagipotharu', mood:'calm resilience', image:'person standing before a cracked open door with warm light spilling through, symbolic of new beginnings after setback, calm hopeful mood, cinematic photography' },
+  { title:'Lopala Balam', screen:'Manaloni atma vishwasam prathi kashtamaina rojunu daatinche asali balam, adi eppudu manatho patu nadustu manaki dhairyanni andistu untundi', mood:'hopeful strength', image:'silhouette of a person standing tall against a stormy sky that is clearing to sunlight, inner strength and hope, cinematic photography, vertical composition' },
+  { title:'Sahanam Phalam', screen:'Sahanam tho eduru chuse prathi kshanam vrudha avvadu, adi manaki sarina samayamlo manchi phalithanni teesukochi mana prayatnaniki nijamaina viluva istundi', mood:'warm encouragement', image:'a single sapling growing through cracked rock in warm afternoon light, patience and quiet reward, cinematic photography, vertical composition' },
+  { title:'Gamyam Vaipu', screen:'Lakshyam vaipu prathi chinna adugu kuda vrudha kaadu, aa adugulu kalisi oka roju manalni gamyaniki teesukellutayani nammakam tho mundhuku sagali', mood:'steady focus', image:'person walking a long winding path toward a distant sunrise on the horizon, focused determined journey, cinematic photography, vertical composition' }
 ];
 
 function log(x){ console.log(`[${new Date().toISOString()}] ${x}`); }
@@ -48,22 +52,22 @@ async function groq(prompt){
   return d.choices[0].message.content.replace(/<think>[\s\S]*?<\/think>/gi,'').trim();
 }
 function parse(raw){
-  const title=raw.match(/TITLE:\s*(.+)/i)?.[1]?.trim()||'Telugu Romantic Quote';
+  const title=raw.match(/TITLE:\s*(.+)/i)?.[1]?.trim()||'Telugu Life Wisdom';
   const screen=(raw.match(/SCREEN:\s*([\s\S]*?)(?=\nMOOD:|\nIMAGE_PROMPT:|$)/i)?.[1]||'').replace(/["“”]/g,'').replace(/\s+/g,' ').trim();
-  const mood=raw.match(/MOOD:\s*(.+)/i)?.[1]?.trim()||'soft romantic nostalgia';
+  const mood=raw.match(/MOOD:\s*(.+)/i)?.[1]?.trim()||'quiet determination';
   const image=raw.match(/IMAGE_PROMPT:\s*([\s\S]*?)(?=\n$|$)/i)?.[1]?.trim()||'';
   return {title,screen,mood,image};
 }
 async function makeQuote(){
-  const themes=['dooramaina prema','mounamaina anubandham','gurthulu','eduruchupu','malli kalavalani korika','oka madhuramaina kshanam','cheppaleni anubhoothi'];
+  const themes=['kashtapadithe vache phalitham','vairalyam nunchi nerchukovadam','atma vishwasam','sahanam mariyu erpu','lakshyam vaipu prayanam','marpu tho vache kotha balam','chinna prayatnam pedda phalitham','gelupu venuka dagi unna kastam'];
   const theme=themes[state().runCount%themes.length];
-  const prompt=`Create ONE completely original romantic Telugu quote for a YouTube Short. Theme: ${theme}.
-SCREEN: exactly 16-36 words. Write ONLY Telugu vocabulary using English alphabet (Tenglish). ZERO English words. No hashtags. No movie lyrics, song lyrics, famous quotes or imitation. Natural Telugu, emotional, poetic, mature, simple and memorable. Do not write a short slogan. Make one flowing thought with 2-3 connected clauses.
+  const prompt=`Create ONE completely original motivational life-wisdom Telugu quote for a YouTube Short. Theme: ${theme}.
+SCREEN: exactly 16-36 words. Write ONLY Telugu vocabulary using English alphabet (Tenglish). ZERO English words. No hashtags. Do NOT quote or reference any real person, book, movie, song, scripture, or existing proverb — the thought must be entirely original. Do NOT make factual claims, statistics, or promises about health, money, or results. Natural Telugu, wise, mature, simple and memorable. Do not write a short slogan. Make one flowing thought with 2-3 connected clauses.
 MOOD: give 2-4 English mood words only.
-IMAGE_PROMPT: write one detailed English prompt for ONE full-screen 9:16 cinematic photograph that exactly matches the quote's emotion and situation. Include subject, setting, lighting, atmosphere and emotion. No text, no watermark, no collage.
+IMAGE_PROMPT: write one detailed English prompt for ONE full-screen 9:16 cinematic photograph that exactly matches the quote's emotion (e.g. determination, growth, quiet strength, new beginnings). Include subject, setting, lighting, atmosphere and emotion. No text, no watermark, no collage, no people's faces resembling real public figures.
 Return exactly four lines: TITLE: ...\nSCREEN: ...\nMOOD: ...\nIMAGE_PROMPT: ...`;
   for(let i=1;i<=5;i++){
-    const q=parse(await groq(prompt+(i>1?'\nPrevious attempt was invalid. Write a completely new 20-30 word Telugu thought, not a shorter version.':'')));
+    const q=parse(await groq(prompt+(i>1?'\nPrevious attempt was invalid. Write a completely new 20-30 word original Telugu thought, not a shorter version, and do not quote anyone.':'')));
     log(`Quote attempt ${i}: ${countWords(q.screen)} words, valid=${validQuote(q.screen)}`);
     if(validQuote(q.screen)&&q.image) return q;
   }
@@ -84,11 +88,11 @@ async function makeImage(prompt){
 function wav(file,duration,mood){
   const sr=44100,total=Math.ceil(sr*duration),a=new Int16Array(total*2);
   const presets={
-    'quiet affection':[261.63,329.63,392], 'tender longing':[220,261.63,329.63],
-    'bittersweet remembrance':[196,246.94,293.66], 'warm nostalgia':[174.61,220,261.63],
-    'hopeful reunion':[261.63,329.63,440]
+    'quiet determination':[196,246.94,293.66], 'hopeful strength':[220,277.18,329.63],
+    'calm resilience':[174.61,220,261.63], 'warm encouragement':[261.63,329.63,392],
+    'steady focus':[196,233.08,293.66]
   };
-  const key=Object.keys(presets).find(k=>mood.toLowerCase().includes(k.split(' ')[1]))||'quiet affection';
+  const key=Object.keys(presets).find(k=>mood.toLowerCase().includes(k.split(' ')[1]))||'steady focus';
   const notes=presets[key];
   for(let i=0;i<total;i++){
     const t=i/sr, chord=notes[Math.floor(t/4)%notes.length], fade=Math.min(1,t/1.5,(duration-t)/1.5);
@@ -108,14 +112,19 @@ function render(image,bgm,quote){
 async function upload(video,title,quote){
   const auth=new google.auth.OAuth2(YT_CLIENT_ID,YT_CLIENT_SECRET);auth.setCredentials({refresh_token:YT_REFRESH_TOKEN});
   const yt=google.youtube({version:'v3',auth});
-  const r=await yt.videos.insert({part:['snippet','status'],requestBody:{snippet:{title:title.slice(0,95),description:`${quote}\n\nOriginal Telugu romantic quote with a quote-specific cinematic image and original instrumental BGM.`,tags:['telugu quotes','telugu romantic quotes','tenglish quotes','romantic shorts','telugu shorts'],categoryId:'22'},status:{privacyStatus:'public',selfDeclaredMadeForKids:false}},media:{body:fs.createReadStream(video)}});
-  log(`Uploaded: https://www.youtube.com/watch?v=${r.data.id}`);
+  const r=await yt.videos.insert({part:['snippet','status'],requestBody:{snippet:{title:title.slice(0,95),description:`${quote}\n\nOriginal Telugu life-wisdom quote with a quote-specific cinematic image and original instrumental BGM.`,tags:['telugu quotes','telugu motivational quotes','tenglish quotes','life wisdom shorts','telugu shorts','self improvement'],categoryId:'27'},status:{privacyStatus:'private',selfDeclaredMadeForKids:false}},media:{body:fs.createReadStream(video)}});
+  const url=`https://www.youtube.com/watch?v=${r.data.id}`;
+  const studioUrl=`https://studio.youtube.com/video/${r.data.id}/edit`;
+  log(`Uploaded as PRIVATE (pending your review): ${url}`);
+  const review=`## Review required before publishing\n\n- Title: ${title}\n- Watch (private): ${url}\n- Edit in Studio: ${studioUrl}\n\nCheck the Telugu text, image and audio, then set visibility to Public yourself in YouTube Studio to publish.`;
+  fs.mkdirSync(WORK_DIR,{recursive:true});
+  fs.writeFileSync(REVIEW_FILE,review,'utf8');
 }
 async function main(){
   fs.mkdirSync(WORK_DIR,{recursive:true});
   for(const [n,v] of Object.entries({GROQ_API_KEY,YT_CLIENT_ID,YT_CLIENT_SECRET,YT_REFRESH_TOKEN}))if(!v)throw new Error(`${n} is missing`);
-  log('Run: quote + ONE full-screen matching image + ONE matching original BGM. NO VOICE.');
+  log('Run: quote + ONE full-screen matching image + ONE matching original BGM. NO VOICE. Uploads PRIVATE for review.');
   const q=await makeQuote();log(`SCREEN (${countWords(q.screen)} words): ${q.screen}`);log(`MOOD: ${q.mood}`);log(`IMAGE: ${q.image}`);
-  const image=await makeImage(q.image);const bgm=wav(path.join(WORK_DIR,'original_bgm.wav'),VIDEO_SECONDS,q.mood);const video=render(image,bgm,q.screen);await upload(video,q.title,q.screen);saveState(q.title);log('Done.');
+  const image=await makeImage(q.image);const bgm=wav(path.join(WORK_DIR,'original_bgm.wav'),VIDEO_SECONDS,q.mood);const video=render(image,bgm,q.screen);await upload(video,q.title,q.screen);saveState(q.title);log('Done. Waiting on your manual review/publish.');
 }
 main().catch(e=>{console.error('FAILED:',e.stack||e);process.exit(1);});
