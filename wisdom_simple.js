@@ -59,13 +59,13 @@ function pickEmoji(mood){const hit=MOOD_EMOJI.find(([re])=>re.test(mood||''));re
 function state(){try{return JSON.parse(fs.readFileSync(STATE_FILE,'utf8'));}catch{return {runCount:0,used:[]};}}
 // `used` grows without trimming: once a title/quote has aired, it must never repeat, not just
 // within the last few runs. The list only holds two short strings per run so it stays tiny for years.
-function isDuplicate(title,screen){
+function isDuplicate(title,screen,image){
   const used=state().used||[];
-  return used.some(r=>r.title===title.trim()||r.screen===screen.trim());
+  return used.some(r=>r.title===title.trim()||r.screen===screen.trim()||(image&&r.image===image.trim()));
 }
-function saveState(title,screen){
+function saveState(title,screen,image){
   const s=state();
-  const used=[...(s.used||[]),{title:title.trim(),screen:screen.trim()}];
+  const used=[...(s.used||[]),{title:title.trim(),screen:screen.trim(),image:(image||'').trim()}];
   fs.writeFileSync(STATE_FILE,JSON.stringify({runCount:(s.runCount||0)+1,lastTitle:title,lastDate:new Date().toISOString(),used},null,2));
 }
 
@@ -95,11 +95,11 @@ IMAGE_PROMPT: write one detailed English prompt for ONE full-screen 9:16 cinemat
 Return exactly five lines: TITLE: ...\nSCREEN: ...\nHOOK: ...\nMOOD: ...\nIMAGE_PROMPT: ...`;
   for(let i=1;i<=5;i++){
     const q=parse(await groq(prompt+(i>1?'\nPrevious attempt was invalid (it had English letters, a misspelled/incomplete title, wrong word count, a quoted/borrowed line, or repeated a quote already used on this channel before). Write a completely new 20-30 word original Telugu thought with a correctly spelled title and a fresh hook line, entirely in Telugu script, not a shorter version, and do not quote anyone.':'')));
-    const ok=validQuote(q.screen)&&validTitle(q.title)&&validHook(q.hook)&&q.image&&!isDuplicate(q.title,q.screen);
+    const ok=validQuote(q.screen)&&validTitle(q.title)&&validHook(q.hook)&&q.image&&!isDuplicate(q.title,q.screen,q.image);
     log(`Quote attempt ${i}: title="${q.title}" (${countWords(q.title)}w), screen=${countWords(q.screen)}w, hook=${countWords(q.hook)}w, valid=${ok}`);
     if(ok) return q;
   }
-  const pool=FALLBACKS.filter(f=>!isDuplicate(f.title,f.screen));
+  const pool=FALLBACKS.filter(f=>!isDuplicate(f.title,f.screen,f.image));
   if(!pool.length) throw new Error('All curated fallbacks have already been used and Groq keeps failing validation — add more FALLBACKS entries.');
   const f=pool[state().runCount%pool.length];
   log(`Groq did not pass validation; using curated original fallback: ${f.title}`);
@@ -109,7 +109,8 @@ Return exactly five lines: TITLE: ...\nSCREEN: ...\nHOOK: ...\nMOOD: ...\nIMAGE_
 async function makeImage(prompt){
   fs.mkdirSync(WORK_DIR,{recursive:true});
   const enhanced=`${prompt}, vertical 9:16, cinematic still photograph, realistic natural human emotion, beautiful composition, soft depth of field, subtle film grain, no words, no letters, no logo, no watermark, no collage`;
-  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(enhanced)}?width=1080&height=1920&nologo=true`;
+  const seed=Math.floor(Math.random()*1e9);
+  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(enhanced)}?width=1080&height=1920&nologo=true&seed=${seed}`;
   const r=await get(url,{},60000); if(!r.ok) throw new Error(`AI image failed HTTP ${r.status}`);
   const b=Buffer.from(await r.arrayBuffer()); if(b.length<10000) throw new Error('AI image response too small');
   const p=path.join(WORK_DIR,'background.jpg'); fs.writeFileSync(p,b); log('Created ONE quote-specific full-screen AI image.'); return p;
@@ -132,8 +133,11 @@ function overlayHtmlPartial(words,revealFrac){
     .txt{font-family:'TeluguFont',sans-serif;font-size:54px;line-height:1.5;color:#fff;text-align:center;text-shadow:0 0 14px rgba(0,0,0,0.95),0 0 28px rgba(0,0,0,0.85),2px 3px 4px rgba(0,0,0,0.9);width:850px;}
   </style></head><body><div class="box"><div class="txt">${inner}</div></div></body></html>`;
 }
-const FADE_STEPS=[0.25,0.5,0.75,1]; // opacity/rise steps captured per newly-appearing word
-const FADE_STEP_SECONDS=0.05;
+// 6 ease-out steps instead of 4 linear ones, each held for exactly one output frame (25fps = 0.04s/frame)
+// so every step is actually distinct on screen instead of some being skipped by frame sampling, and the
+// eased (fast-then-settle) spacing reads as a smoother float-in than even linear steps would.
+const FADE_STEPS=[1,2,3,4,5,6].map(n=>1-(1-n/6)**3);
+const FADE_STEP_SECONDS=0.04;
 // Renders several PNGs per newly-added word (a fade+float-up sequence) instead of one flat cut, so
 // the quote visibly builds up word by word across REVEAL_SECONDS, then holds the full text for
 // HOLD_SECONDS. A ffmpeg concat-demuxer list drives the per-frame timing.
@@ -205,7 +209,7 @@ async function main(){
   const video=await render(image,q.screen);
   const titleWithEmoji=`${pickEmoji(q.mood)} ${q.title}`;
   await upload(video,titleWithEmoji,q.hook);
-  saveState(q.title,q.screen);
+  saveState(q.title,q.screen,q.image);
   log('Done. Waiting on your manual review/publish.');
 }
 main().catch(e=>{console.error('FAILED:',e.stack||e);process.exit(1);});
