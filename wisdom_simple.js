@@ -24,9 +24,11 @@ const TITLE_MIN_WORDS = 1;
 const TITLE_MAX_WORDS = 6;
 const HOOK_MIN_WORDS = 4;
 const HOOK_MAX_WORDS = 20;
-const VIDEO_SECONDS = 20;
-const REVEAL_SECONDS = 14; // words appear progressively over this window
-const HOLD_SECONDS = VIDEO_SECONDS - REVEAL_SECONDS; // full quote holds steady for the rest
+const CHUNK_WORDS = 3; // words shown on screen together, fast-paced typography style
+const CHUNK_HOLD_SECONDS = 1.8; // total time each chunk is on screen (typing + settled hold), 1.5-2s per request
+const TYPE_STEP_SECONDS = 0.04; // one output frame (25fps) per typewriter step
+const TYPE_BUDGET_SECONDS = 0.9; // max time spent typing a chunk before it settles for the rest of its hold
+const TAIL_PAD_SECONDS = 0.6; // extra hold added after the last chunk so the video doesn't cut off abruptly
 const TELUGU_RANGE = /[ఀ-౿]/;
 const MOOD_EMOJI = [[/determin/i,'💪'],[/resilien/i,'🌊'],[/strength/i,'🔥'],[/hope/i,'🌅'],[/focus/i,'🎯'],[/calm/i,'🍃'],[/growth/i,'🌱'],[/courage|brave/i,'🦁']];
 
@@ -156,52 +158,88 @@ async function makeImage(prompt){
 
 function stripEmoji(s){return String(s||'').replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}]/gu,'').trim();}
 function escapeHtml(s){return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-// The newest word is rendered as its own span with an inline opacity + translateY so each sub-frame
-// captures a step of a fade-up "float in" instead of the whole line changing in a single hard cut.
-function overlayHtmlPartial(words,revealFrac){
-  const prior=words.slice(0,-1).map(escapeHtml).join(' ');
-  const last=escapeHtml(words[words.length-1]);
-  const rise=((1-revealFrac)*14).toFixed(2);
-  const lastSpan=`<span style="opacity:${revealFrac};display:inline-block;transform:translateY(${rise}px)">${last}</span>`;
-  const inner=prior?`${prior} ${lastSpan}`:lastSpan;
+// Groups words into fast-cut chunks instead of one accumulating line. A trailing lone word is folded
+// into the previous chunk so no chunk ever shows just a single orphan word.
+function splitChunks(words){
+  const chunks=[];
+  for(let i=0;i<words.length;i+=CHUNK_WORDS) chunks.push(words.slice(i,i+CHUNK_WORDS));
+  if(chunks.length>1&&chunks[chunks.length-1].length===1){
+    const last=chunks.pop();
+    chunks[chunks.length-1]=chunks[chunks.length-1].concat(last);
+  }
+  return chunks;
+}
+// No real NLP tagging available, so the longest word in the chunk is used as a proxy for "the main word".
+function pickHighlightIndex(chunkWords){
+  let idx=0,maxLen=0;
+  chunkWords.forEach((w,i)=>{const len=[...w].length;if(len>maxLen){maxLen=len;idx=i;}});
+  return idx;
+}
+// Segments by grapheme cluster (not JS string index) so a Telugu conjunct/matra is always revealed as
+// one whole unit during the typewriter animation, never split mid-glyph.
+const GRAPHEME_SEGMENTER=new Intl.Segmenter('te',{granularity:'grapheme'});
+function graphemes(s){return Array.from(GRAPHEME_SEGMENTER.segment(s),seg=>seg.segment);}
+function chunkFrameInner(wordGraphemes,highlightIdx,revealed){
+  let remaining=revealed;
+  const parts=[];
+  for(let wi=0;wi<wordGraphemes.length&&remaining>0;wi++){
+    const g=wordGraphemes[wi];
+    const take=Math.min(remaining,g.length);
+    if(take<=0)continue;
+    const cls=wi===highlightIdx?'hi':'w';
+    parts.push(`<span class="${cls}">${escapeHtml(g.slice(0,take).join(''))}</span>`);
+    remaining-=take;
+  }
+  return parts.join(' ');
+}
+function chunkHtmlPage(inner){
   return `<!doctype html><html><head><meta charset="utf-8"><style>
     @font-face{font-family:'TeluguFont';src:url('file://${TELUGU_FONT}');}
     html,body{margin:0;padding:0;width:1080px;height:1920px;background:transparent;}
-    .box{position:absolute;left:55px;top:650px;width:970px;height:620px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 60px;}
-    .txt{font-family:'TeluguFont',sans-serif;font-size:54px;line-height:1.5;color:#fff;text-align:center;text-shadow:0 0 14px rgba(0,0,0,0.95),0 0 28px rgba(0,0,0,0.85),2px 3px 4px rgba(0,0,0,0.9);width:850px;}
+    .box{position:absolute;left:40px;top:760px;width:1000px;height:400px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 40px;}
+    .txt{font-family:'TeluguFont',sans-serif;font-size:70px;line-height:1.4;color:#fff;text-align:center;text-shadow:0 0 16px rgba(0,0,0,0.95),0 0 30px rgba(0,0,0,0.85),2px 3px 4px rgba(0,0,0,0.9);width:1000px;}
+    .hi{color:#FFD54A;text-shadow:0 0 18px rgba(255,213,74,0.9),0 0 34px rgba(255,213,74,0.6),2px 3px 4px rgba(0,0,0,0.9);}
   </style></head><body><div class="box"><div class="txt">${inner}</div></div></body></html>`;
 }
-// 6 ease-out steps instead of 4 linear ones, each held for exactly one output frame (25fps = 0.04s/frame)
-// so every step is actually distinct on screen instead of some being skipped by frame sampling, and the
-// eased (fast-then-settle) spacing reads as a smoother float-in than even linear steps would.
-const FADE_STEPS=[1,2,3,4,5,6].map(n=>1-(1-n/6)**3);
-const FADE_STEP_SECONDS=0.04;
-// Renders several PNGs per newly-added word (a fade+float-up sequence) instead of one flat cut, so
-// the quote visibly builds up word by word across REVEAL_SECONDS, then holds the full text for
-// HOLD_SECONDS. A ffmpeg concat-demuxer list drives the per-frame timing.
-async function renderRevealSequence(quote){
+// Renders each chunk as a typewriter reveal (grapheme by grapheme, frame-aligned) that settles into a
+// held frame for the rest of CHUNK_HOLD_SECONDS, then hard-cuts to the next chunk — a fast, high-energy
+// style instead of one line slowly accumulating the whole quote. Total video length is now however long
+// the chunk timeline actually runs, not a fixed constant.
+async function renderChunkSequence(quote){
   if(!CHROME_PATH) throw new Error('No Chrome/Chromium binary found to render Telugu text');
   fs.rmSync(FRAMES_DIR,{recursive:true,force:true});
   fs.mkdirSync(FRAMES_DIR,{recursive:true});
-  const words=stripEmoji(quote).trim().split(/\s+/);
-  const perWord=REVEAL_SECONDS/words.length;
-  const settleSeconds=Math.max(perWord-(FADE_STEPS.length-1)*FADE_STEP_SECONDS,FADE_STEP_SECONDS);
+  const chunks=splitChunks(stripEmoji(quote).trim().split(/\s+/));
   const browser=await puppeteer.launch({executablePath:CHROME_PATH,headless:true,args:['--no-sandbox','--disable-gpu']});
   const timeline=[];
   try{
     const page=await browser.newPage();
     await page.setViewport({width:1080,height:1920});
-    for(let i=1;i<=words.length;i++){
-      const cumulative=words.slice(0,i);
-      for(let s=0;s<FADE_STEPS.length;s++){
-        const frac=FADE_STEPS[s];
-        await page.setContent(overlayHtmlPartial(cumulative,frac),{waitUntil:'load'});
+    for(let ci=0;ci<chunks.length;ci++){
+      const chunkWords=chunks[ci];
+      const wordGraphemes=chunkWords.map(w=>graphemes(w));
+      const totalGraphemes=wordGraphemes.reduce((s,g)=>s+g.length,0);
+      const highlightIdx=pickHighlightIndex(chunkWords);
+      const maxSteps=Math.max(1,Math.floor(TYPE_BUDGET_SECONDS/TYPE_STEP_SECONDS));
+      const stride=Math.max(1,Math.ceil(totalGraphemes/maxSteps));
+      const revealCounts=[];
+      for(let r=stride;r<totalGraphemes;r+=stride) revealCounts.push(r);
+      revealCounts.push(totalGraphemes);
+      const isLastChunk=ci===chunks.length-1;
+      for(let si=0;si<revealCounts.length;si++){
+        const inner=chunkFrameInner(wordGraphemes,highlightIdx,revealCounts[si]);
+        await page.setContent(chunkHtmlPage(inner),{waitUntil:'load'});
         await page.evaluate(()=>document.fonts.ready);
-        const p=path.join(FRAMES_DIR,`f${String(i).padStart(3,'0')}_${s}.png`);
+        const p=path.join(FRAMES_DIR,`c${String(ci).padStart(3,'0')}_${si}.png`);
         await page.screenshot({path:p,omitBackground:true});
-        const isLastStep=s===FADE_STEPS.length-1;
-        const isLastWord=i===words.length;
-        const duration=isLastStep?(isLastWord?HOLD_SECONDS:settleSeconds):FADE_STEP_SECONDS;
+        const isLastStep=si===revealCounts.length-1;
+        let duration;
+        if(isLastStep){
+          const typedSeconds=(revealCounts.length-1)*TYPE_STEP_SECONDS;
+          duration=Math.max(CHUNK_HOLD_SECONDS-typedSeconds,TYPE_STEP_SECONDS)+(isLastChunk?TAIL_PAD_SECONDS:0);
+        }else{
+          duration=TYPE_STEP_SECONDS;
+        }
         timeline.push({path:p,duration});
       }
     }
@@ -211,16 +249,23 @@ async function renderRevealSequence(quote){
   lines.push(`file '${timeline[timeline.length-1].path}'`); // concat demuxer quirk: last duration only counts if the file repeats once more
   const listFile=path.join(FRAMES_DIR,'list.txt');
   fs.writeFileSync(listFile,lines.join('\n'),'utf8');
-  return listFile;
+  const totalSeconds=timeline.reduce((s,f)=>s+f.duration,0);
+  return {listFile,totalSeconds};
 }
 async function render(image,quote){
   const out=path.join(WORK_DIR,'output.mp4');
-  const overlayList=await renderRevealSequence(quote);
-  // zoompan holds d=500 output frames (25fps * 20s); increment reaches the 1.08 cap exactly at the last frame
-  // instead of within the first ~3.5s, so the Ken Burns zoom runs smoothly for the whole clip instead of freezing.
-  const zoomStep=(0.08/(VIDEO_SECONDS*25)).toFixed(6);
-  const fc=`[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,zoompan=z='min(zoom+${zoomStep},1.08)':d=${VIDEO_SECONDS*25}:s=1080x1920:fps=25[bg];[bg][2:v]overlay=0:0:format=auto[v];[1:a]volume=-18dB[a]`;
-  execSync(`ffmpeg -y -loop 1 -i "${image}" -i "${BGM_FILE}" -f concat -safe 0 -i "${overlayList}" -filter_complex "${fc}" -map "[v]" -map "[a]" -t ${VIDEO_SECONDS} -c:v libx264 -preset veryfast -crf 20 -pix_fmt yuv420p -c:a aac -b:a 128k -shortest "${out}"`,{stdio:'inherit'});return out;
+  const {listFile,totalSeconds}=await renderChunkSequence(quote);
+  const frameCount=Math.round(totalSeconds*25);
+  // zoompan increment reaches the 1.08 cap exactly on the last frame instead of plateauing early, same
+  // fix as before, just recomputed against the now-variable video length.
+  const zoomStep=(0.08/frameCount).toFixed(6);
+  const fadeOutStart=Math.max(totalSeconds-1,0).toFixed(2);
+  // BGM loops (-stream_loop -1) since video length now varies with quote length instead of being fixed
+  // at the bundled clip's 20s; volume/fade are applied fresh here against the real duration rather than
+  // relying on the fades baked into the source file, which only matched the old fixed-length videos.
+  const fc=`[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,zoompan=z='min(zoom+${zoomStep},1.08)':d=${frameCount}:s=1080x1920:fps=25[bg];[bg][2:v]overlay=0:0:format=auto[v];[1:a]volume=-18dB,afade=t=in:st=0:d=0.5,afade=t=out:st=${fadeOutStart}:d=1[a]`;
+  execSync(`ffmpeg -y -loop 1 -i "${image}" -stream_loop -1 -i "${BGM_FILE}" -f concat -safe 0 -i "${listFile}" -filter_complex "${fc}" -map "[v]" -map "[a]" -t ${totalSeconds.toFixed(2)} -c:v libx264 -preset veryfast -crf 20 -pix_fmt yuv420p -c:a aac -b:a 128k -shortest "${out}"`,{stdio:'inherit'});
+  return out;
 }
 function buildDescription(hook){
   const hashtags='#TeluguQuotes #JeevithaSatyalu #TeluguMotivation #LifeWisdom #TeluguShorts #MotivationalQuotes #InspirationalQuotes #TeluguStatus #Shorts';
