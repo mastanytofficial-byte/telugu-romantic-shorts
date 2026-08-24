@@ -115,43 +115,57 @@ async function makeImage(prompt){
 }
 
 function stripEmoji(s){return String(s||'').replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}]/gu,'').trim();}
-function overlayHtml(text){
-  const safeText=stripEmoji(text).replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function escapeHtml(s){return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+// The newest word is rendered as its own span with an inline opacity + translateY so each sub-frame
+// captures a step of a fade-up "float in" instead of the whole line changing in a single hard cut.
+function overlayHtmlPartial(words,revealFrac){
+  const prior=words.slice(0,-1).map(escapeHtml).join(' ');
+  const last=escapeHtml(words[words.length-1]);
+  const rise=((1-revealFrac)*14).toFixed(2);
+  const lastSpan=`<span style="opacity:${revealFrac};display:inline-block;transform:translateY(${rise}px)">${last}</span>`;
+  const inner=prior?`${prior} ${lastSpan}`:lastSpan;
   return `<!doctype html><html><head><meta charset="utf-8"><style>
     @font-face{font-family:'TeluguFont';src:url('file://${TELUGU_FONT}');}
     html,body{margin:0;padding:0;width:1080px;height:1920px;background:transparent;}
     .box{position:absolute;left:55px;top:650px;width:970px;height:620px;background:rgba(0,0,0,0.26);display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 60px;}
     .txt{font-family:'TeluguFont',sans-serif;font-size:54px;line-height:1.5;color:#fff;text-align:center;text-shadow:2px 3px 4px rgba(0,0,0,0.9);width:850px;}
-  </style></head><body><div class="box"><div class="txt">${safeText}</div></div></body></html>`;
+  </style></head><body><div class="box"><div class="txt">${inner}</div></div></body></html>`;
 }
-// Renders one PNG per cumulative-word state (word 1, words 1-2, words 1-2-3, ...) so the quote
-// builds up on screen instead of appearing all at once, then a concat-demuxer list that shows
-// each frame for a slice of REVEAL_SECONDS and holds the final full-text frame for HOLD_SECONDS.
+const FADE_STEPS=[0.25,0.5,0.75,1]; // opacity/rise steps captured per newly-appearing word
+const FADE_STEP_SECONDS=0.05;
+// Renders several PNGs per newly-added word (a fade+float-up sequence) instead of one flat cut, so
+// the quote visibly builds up word by word across REVEAL_SECONDS, then holds the full text for
+// HOLD_SECONDS. A ffmpeg concat-demuxer list drives the per-frame timing.
 async function renderRevealSequence(quote){
   if(!CHROME_PATH) throw new Error('No Chrome/Chromium binary found to render Telugu text');
   fs.rmSync(FRAMES_DIR,{recursive:true,force:true});
   fs.mkdirSync(FRAMES_DIR,{recursive:true});
-  const words=quote.trim().split(/\s+/);
+  const words=stripEmoji(quote).trim().split(/\s+/);
+  const perWord=REVEAL_SECONDS/words.length;
+  const settleSeconds=Math.max(perWord-(FADE_STEPS.length-1)*FADE_STEP_SECONDS,FADE_STEP_SECONDS);
   const browser=await puppeteer.launch({executablePath:CHROME_PATH,headless:true,args:['--no-sandbox','--disable-gpu']});
-  const framePaths=[];
+  const timeline=[];
   try{
     const page=await browser.newPage();
     await page.setViewport({width:1080,height:1920});
     for(let i=1;i<=words.length;i++){
-      const partial=words.slice(0,i).join(' ');
-      await page.setContent(overlayHtml(partial),{waitUntil:'load'});
-      await page.evaluate(()=>document.fonts.ready);
-      const p=path.join(FRAMES_DIR,`f${String(i).padStart(3,'0')}.png`);
-      await page.screenshot({path:p,omitBackground:true});
-      framePaths.push(p);
+      const cumulative=words.slice(0,i);
+      for(let s=0;s<FADE_STEPS.length;s++){
+        const frac=FADE_STEPS[s];
+        await page.setContent(overlayHtmlPartial(cumulative,frac),{waitUntil:'load'});
+        await page.evaluate(()=>document.fonts.ready);
+        const p=path.join(FRAMES_DIR,`f${String(i).padStart(3,'0')}_${s}.png`);
+        await page.screenshot({path:p,omitBackground:true});
+        const isLastStep=s===FADE_STEPS.length-1;
+        const isLastWord=i===words.length;
+        const duration=isLastStep?(isLastWord?HOLD_SECONDS:settleSeconds):FADE_STEP_SECONDS;
+        timeline.push({path:p,duration});
+      }
     }
   }finally{await browser.close();}
-  const perWord=REVEAL_SECONDS/words.length;
   const lines=[];
-  for(const p of framePaths){lines.push(`file '${p}'`);lines.push(`duration ${perWord.toFixed(3)}`);}
-  const last=framePaths[framePaths.length-1];
-  lines.push(`file '${last}'`);lines.push(`duration ${HOLD_SECONDS.toFixed(3)}`);
-  lines.push(`file '${last}'`); // concat demuxer quirk: the last duration is only honored if the file repeats once more
+  for(const f of timeline){lines.push(`file '${f.path}'`);lines.push(`duration ${f.duration.toFixed(3)}`);}
+  lines.push(`file '${timeline[timeline.length-1].path}'`); // concat demuxer quirk: last duration only counts if the file repeats once more
   const listFile=path.join(FRAMES_DIR,'list.txt');
   fs.writeFileSync(listFile,lines.join('\n'),'utf8');
   return listFile;
@@ -162,7 +176,7 @@ async function render(image,quote){
   // zoompan holds d=500 output frames (25fps * 20s); increment reaches the 1.08 cap exactly at the last frame
   // instead of within the first ~3.5s, so the Ken Burns zoom runs smoothly for the whole clip instead of freezing.
   const zoomStep=(0.08/(VIDEO_SECONDS*25)).toFixed(6);
-  const fc=`[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,zoompan=z='min(zoom+${zoomStep},1.08)':d=${VIDEO_SECONDS*25}:s=1080x1920:fps=25[bg];[bg][2:v]overlay=0:0:format=auto[v];[1:a]volume=-10dB[a]`;
+  const fc=`[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,zoompan=z='min(zoom+${zoomStep},1.08)':d=${VIDEO_SECONDS*25}:s=1080x1920:fps=25[bg];[bg][2:v]overlay=0:0:format=auto[v];[1:a]volume=-18dB[a]`;
   execSync(`ffmpeg -y -loop 1 -i "${image}" -i "${BGM_FILE}" -f concat -safe 0 -i "${overlayList}" -filter_complex "${fc}" -map "[v]" -map "[a]" -t ${VIDEO_SECONDS} -c:v libx264 -preset veryfast -crf 20 -pix_fmt yuv420p -c:a aac -b:a 128k -shortest "${out}"`,{stdio:'inherit'});return out;
 }
 function buildDescription(hook){
