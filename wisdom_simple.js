@@ -47,7 +47,7 @@ function state(){try{return JSON.parse(fs.readFileSync(STATE_FILE,'utf8'));}catc
 function saveState(title){const s=state();fs.writeFileSync(STATE_FILE,JSON.stringify({runCount:(s.runCount||0)+1,lastTitle:title,lastDate:new Date().toISOString()},null,2));}
 
 async function groq(prompt){
-  const r=await get('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${GROQ_API_KEY}`},body:JSON.stringify({model:'llama-3.3-70b-versatile',temperature:.85,messages:[{role:'user',content:prompt}]})});
+  const r=await get('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${GROQ_API_KEY}`},body:JSON.stringify({model:'openai/gpt-oss-120b',temperature:.85,messages:[{role:'user',content:prompt}]})});
   const d=await r.json(); if(!d.choices?.[0]?.message?.content) throw new Error(`Groq returned no content: HTTP ${r.status} ${JSON.stringify(d)}`);
   return d.choices[0].message.content.replace(/<think>[\s\S]*?<\/think>/gi,'').trim();
 }
