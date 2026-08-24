@@ -82,6 +82,23 @@ function parse(raw){
   const image=raw.match(/IMAGE_PROMPT:\s*([\s\S]*?)(?=\n$|$)/i)?.[1]?.trim()||'';
   return {title,screen,hook,mood,image};
 }
+// A single generation call asking the model to "proofread itself" is not reliable enough — it still
+// let a real invented word ("ఎర్పు" for "ఓర్పు") and a case-agreement error through. A separate
+// verification call, with fresh eyes on already-generated text, catches more than self-editing
+// during generation does.
+async function verifyTelugu(q){
+  const vp=`You are a strict native Telugu proofreader reviewing text someone else wrote. Check the three lines below WORD BY WORD. For each: (1) is every single word a real, standard, dictionary Telugu word — not invented, not a typo, not a corrupted spelling that merely looks plausible; (2) is the grammar (verb-noun case agreement, transitive vs intransitive verb usage, natural everyday idiom) completely correct.
+TITLE: ${q.title}
+SCREEN: ${q.screen}
+HOOK: ${q.hook}
+Reply with EXACTLY two lines and nothing else:
+CLEAN: yes or no
+ISSUES: a short comma-separated list naming any specific wrong/invented word or grammar mistake found, or "none" if CLEAN is yes`;
+  const raw=await groq(vp);
+  const clean=/^CLEAN:\s*yes/im.test(raw);
+  const issues=raw.match(/ISSUES:\s*(.+)/i)?.[1]?.trim()||'';
+  return {clean,issues};
+}
 async function makeQuote(){
   const themes=['kashtapadithe vache phalitham','vairalyam nunchi nerchukovadam','atma vishwasam','sahanam mariyu erpu','lakshyam vaipu prayanam','marpu tho vache kotha balam','chinna prayatnam pedda phalitham','gelupu venuka dagi unna kastam'];
   const theme=themes[state().runCount%themes.length];
@@ -94,9 +111,11 @@ MOOD: give 2-4 English mood words only.
 IMAGE_PROMPT: write one detailed English prompt for ONE full-screen 9:16 cinematic photograph that exactly matches the quote's emotion (e.g. determination, growth, quiet strength, new beginnings). Include subject, setting, lighting, atmosphere and emotion. No text, no watermark, no collage, no people's faces resembling real public figures.
 Return exactly five lines: TITLE: ...\nSCREEN: ...\nHOOK: ...\nMOOD: ...\nIMAGE_PROMPT: ...`;
   for(let i=1;i<=5;i++){
-    const q=parse(await groq(prompt+(i>1?'\nPrevious attempt was invalid (it had English letters, a misspelled/incomplete title, wrong word count, a quoted/borrowed line, or repeated a quote already used on this channel before). Write a completely new 20-30 word original Telugu thought with a correctly spelled title and a fresh hook line, entirely in Telugu script, not a shorter version, and do not quote anyone.':'')));
-    const ok=validQuote(q.screen)&&validTitle(q.title)&&validHook(q.hook)&&q.image&&!isDuplicate(q.title,q.screen,q.image);
-    log(`Quote attempt ${i}: title="${q.title}" (${countWords(q.title)}w), screen=${countWords(q.screen)}w, hook=${countWords(q.hook)}w, valid=${ok}`);
+    const q=parse(await groq(prompt+(i>1?'\nPrevious attempt was invalid (it had English letters, a misspelled/incomplete title, an invented/non-dictionary word, a grammar mistake, wrong word count, a quoted/borrowed line, or repeated a quote already used on this channel before). Write a completely new 20-30 word original Telugu thought with a correctly spelled title and a fresh hook line, entirely in Telugu script, not a shorter version, and do not quote anyone.':'')));
+    const basicOk=validQuote(q.screen)&&validTitle(q.title)&&validHook(q.hook)&&q.image&&!isDuplicate(q.title,q.screen,q.image);
+    const verify=basicOk?await verifyTelugu(q):null;
+    const ok=basicOk&&verify.clean;
+    log(`Quote attempt ${i}: title="${q.title}" (${countWords(q.title)}w), screen=${countWords(q.screen)}w, hook=${countWords(q.hook)}w, valid=${ok}${verify&&!verify.clean?` (verify issues: ${verify.issues})`:''}`);
     if(ok) return q;
   }
   const pool=FALLBACKS.filter(f=>!isDuplicate(f.title,f.screen,f.image));
