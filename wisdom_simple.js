@@ -69,9 +69,20 @@ function saveState(title,screen,image){
   fs.writeFileSync(STATE_FILE,JSON.stringify({runCount:(s.runCount||0)+1,lastTitle:title,lastDate:new Date().toISOString(),used},null,2));
 }
 
-async function groq(prompt){
+async function sleep(ms){return new Promise(res=>setTimeout(res,ms));}
+// The verification pass doubled Groq calls per attempt (generate + verify), which can trip Groq's
+// free-tier tokens-per-minute limit mid-run. Retry on HTTP 429 using the wait time Groq reports
+// instead of crashing the whole job.
+async function groq(prompt,attempt=1){
   const r=await get('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${GROQ_API_KEY}`},body:JSON.stringify({model:'openai/gpt-oss-120b',temperature:.85,messages:[{role:'user',content:prompt}]})});
-  const d=await r.json(); if(!d.choices?.[0]?.message?.content) throw new Error(`Groq returned no content: HTTP ${r.status} ${JSON.stringify(d)}`);
+  const d=await r.json();
+  if(r.status===429&&attempt<=3){
+    const waitSeconds=Number(d?.error?.message?.match(/try again in ([\d.]+)s/)?.[1])||15;
+    log(`Groq rate-limited (attempt ${attempt}); waiting ${waitSeconds}s before retry`);
+    await sleep(Math.ceil(waitSeconds*1000)+1000);
+    return groq(prompt,attempt+1);
+  }
+  if(!d.choices?.[0]?.message?.content) throw new Error(`Groq returned no content: HTTP ${r.status} ${JSON.stringify(d)}`);
   return d.choices[0].message.content.replace(/<think>[\s\S]*?<\/think>/gi,'').trim();
 }
 function parse(raw){
