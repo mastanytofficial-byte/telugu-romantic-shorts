@@ -102,7 +102,7 @@ function wav(file,duration,mood){
   }
   const h=Buffer.alloc(44+a.length*2); h.write('RIFF',0);h.writeUInt32LE(36+a.length*2,4);h.write('WAVE',8);h.write('fmt ',12);h.writeUInt32LE(16,16);h.writeUInt16LE(1,20);h.writeUInt16LE(2,22);h.writeUInt32LE(sr,24);h.writeUInt32LE(sr*4,28);h.writeUInt16LE(4,32);h.writeUInt16LE(16,34);h.write('data',36);h.writeUInt32LE(a.length*2,40);for(let i=0;i<a.length;i++)h.writeInt16LE(a[i],44+i*2);fs.writeFileSync(file,h);return file;
 }
-function quoteLines(text,max=31){const out=[];let line='';for(const w of text.split(/\s+/)){const n=line?`${line} ${w}`:w;if(line&&n.length>max){out.push(line);line=w}else line=n}if(line)out.push(line);return out.join('\\n');}
+function quoteLines(text,max=31){const out=[];let line='';for(const w of text.split(/\s+/)){const n=line?`${line} ${w}`:w;if(line&&n.length>max){out.push(line);line=w}else line=n}if(line)out.push(line);return out.join('\n');}
 function render(image,bgm,quote){
   const out=path.join(WORK_DIR,'output.mp4'),txt=path.join(WORK_DIR,'quote.txt');fs.writeFileSync(txt,quoteLines(quote),'utf8');
   const font='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf';
