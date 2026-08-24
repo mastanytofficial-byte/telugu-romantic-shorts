@@ -17,6 +17,9 @@ const TELUGU_FONT = '/usr/share/fonts/truetype/noto/NotoSansTelugu-SemiBold.ttf'
 const CHROME_PATH = process.env.CHROME_PATH || ['/usr/bin/google-chrome-stable','/usr/bin/google-chrome','/usr/bin/chromium-browser','/usr/bin/chromium'].find(p=>fs.existsSync(p));
 const MIN_WORDS = 16;
 const MAX_WORDS = 36;
+const TITLE_MIN_WORDS = 1;
+const TITLE_MAX_WORDS = 6;
+const RECENT_HISTORY_SIZE = 15;
 const VIDEO_SECONDS = 20;
 const TELUGU_RANGE = /[ఀ-౿]/;
 
@@ -39,8 +42,20 @@ function validQuote(s){
   const n=countWords(s), leaked=latinLeakage(s);
   return n>=MIN_WORDS&&n<=MAX_WORDS&&leaked.length===0&&!/#/.test(s)&&TELUGU_RANGE.test(s);
 }
-function state(){try{return JSON.parse(fs.readFileSync(STATE_FILE,'utf8'));}catch{return {runCount:0};}}
-function saveState(title){const s=state();fs.writeFileSync(STATE_FILE,JSON.stringify({runCount:(s.runCount||0)+1,lastTitle:title,lastDate:new Date().toISOString()},null,2));}
+function validTitle(t){
+  const n=countWords(t), leaked=latinLeakage(t);
+  return n>=TITLE_MIN_WORDS&&n<=TITLE_MAX_WORDS&&leaked.length===0&&!/#/.test(t)&&TELUGU_RANGE.test(t)&&String(t||'').length<=60;
+}
+function state(){try{return JSON.parse(fs.readFileSync(STATE_FILE,'utf8'));}catch{return {runCount:0,recent:[]};}}
+function isDuplicate(title,screen){
+  const recent=state().recent||[];
+  return recent.some(r=>r.title===title.trim()||r.screen===screen.trim());
+}
+function saveState(title,screen){
+  const s=state();
+  const recent=[...(s.recent||[]),{title:title.trim(),screen:screen.trim()}].slice(-RECENT_HISTORY_SIZE);
+  fs.writeFileSync(STATE_FILE,JSON.stringify({runCount:(s.runCount||0)+1,lastTitle:title,lastDate:new Date().toISOString(),recent},null,2));
+}
 
 async function groq(prompt){
   const r=await get('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${GROQ_API_KEY}`},body:JSON.stringify({model:'openai/gpt-oss-120b',temperature:.85,messages:[{role:'user',content:prompt}]})});
@@ -58,17 +73,19 @@ async function makeQuote(){
   const themes=['kashtapadithe vache phalitham','vairalyam nunchi nerchukovadam','atma vishwasam','sahanam mariyu erpu','lakshyam vaipu prayanam','marpu tho vache kotha balam','chinna prayatnam pedda phalitham','gelupu venuka dagi unna kastam'];
   const theme=themes[state().runCount%themes.length];
   const prompt=`Create ONE completely original motivational life-wisdom quote for a YouTube Short, in the Telugu language. Theme: ${theme}.
-TITLE: a short 2-4 word title, written entirely in native Telugu script.
+TITLE: a short, grammatically complete, correctly spelled 2-4 word Telugu phrase that captures the quote's core idea, written entirely in native Telugu script. Double-check the spelling of every word before answering — for example "లక్ష్యం" (goal) must keep its "్యం" ending, do not drop it.
 SCREEN: exactly 16-36 words, written ENTIRELY in native Telugu script (Unicode Telugu letters). Do NOT use English/Latin letters anywhere in this line, not even for names or filler. No hashtags. Do NOT quote or reference any real person, book, movie, song, scripture, or existing proverb — the thought must be entirely original. Do NOT make factual claims, statistics, or promises about health, money, or results. Natural Telugu, wise, mature, simple and memorable. Do not write a short slogan. Make one flowing thought with 2-3 connected clauses.
 MOOD: give 2-4 English mood words only.
 IMAGE_PROMPT: write one detailed English prompt for ONE full-screen 9:16 cinematic photograph that exactly matches the quote's emotion (e.g. determination, growth, quiet strength, new beginnings). Include subject, setting, lighting, atmosphere and emotion. No text, no watermark, no collage, no people's faces resembling real public figures.
 Return exactly four lines: TITLE: ...\nSCREEN: ...\nMOOD: ...\nIMAGE_PROMPT: ...`;
   for(let i=1;i<=5;i++){
-    const q=parse(await groq(prompt+(i>1?'\nPrevious attempt was invalid (it had English letters, wrong word count, or a quoted/borrowed line). Write a completely new 20-30 word original Telugu thought, entirely in Telugu script, not a shorter version, and do not quote anyone.':'')));
-    log(`Quote attempt ${i}: ${countWords(q.screen)} words, valid=${validQuote(q.screen)}`);
-    if(validQuote(q.screen)&&q.image) return q;
+    const q=parse(await groq(prompt+(i>1?'\nPrevious attempt was invalid (it had English letters, a misspelled/incomplete title, wrong word count, a quoted/borrowed line, or repeated a quote already used on this channel). Write a completely new 20-30 word original Telugu thought with a correctly spelled title, entirely in Telugu script, not a shorter version, and do not quote anyone.':'')));
+    const ok=validQuote(q.screen)&&validTitle(q.title)&&q.image&&!isDuplicate(q.title,q.screen);
+    log(`Quote attempt ${i}: title="${q.title}" (${countWords(q.title)}w), screen=${countWords(q.screen)}w, valid=${ok}`);
+    if(ok) return q;
   }
-  const f=FALLBACKS[state().runCount%FALLBACKS.length];
+  const pool=FALLBACKS.filter(f=>!isDuplicate(f.title,f.screen));
+  const f=(pool.length?pool:FALLBACKS)[state().runCount%(pool.length||FALLBACKS.length)];
   log(`Groq did not pass validation; using curated original fallback: ${f.title}`);
   return f;
 }
@@ -90,7 +107,7 @@ async function renderOverlay(quote,outPath){
     @font-face{font-family:'TeluguFont';src:url('file://${TELUGU_FONT}');}
     html,body{margin:0;padding:0;width:1080px;height:1920px;background:transparent;}
     .box{position:absolute;left:55px;top:650px;width:970px;height:620px;background:rgba(0,0,0,0.26);display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 60px;}
-    .txt{font-family:'TeluguFont',sans-serif;font-size:46px;line-height:1.5;color:#fff;text-align:center;text-shadow:2px 3px 4px rgba(0,0,0,0.9);width:850px;}
+    .txt{font-family:'TeluguFont',sans-serif;font-size:54px;line-height:1.5;color:#fff;text-align:center;text-shadow:2px 3px 4px rgba(0,0,0,0.9);width:850px;}
   </style></head><body><div class="box"><div class="txt">${safeText}</div></div></body></html>`;
   const browser=await puppeteer.launch({executablePath:CHROME_PATH,headless:true,args:['--no-sandbox','--disable-gpu']});
   try{
@@ -104,13 +121,20 @@ async function renderOverlay(quote,outPath){
 async function render(image,quote){
   const out=path.join(WORK_DIR,'output.mp4'),overlay=path.join(WORK_DIR,'overlay.png');
   await renderOverlay(quote,overlay);
-  const fc=`[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,zoompan=z='min(zoom+0.0009,1.08)':d=500:s=1080x1920:fps=25[bg];[bg][2:v]overlay=0:0:format=auto[v]`;
-  execSync(`ffmpeg -y -loop 1 -i "${image}" -i "${BGM_FILE}" -loop 1 -i "${overlay}" -filter_complex "${fc}" -map "[v]" -map 1:a -t ${VIDEO_SECONDS} -c:v libx264 -preset veryfast -crf 20 -pix_fmt yuv420p -c:a aac -b:a 128k -shortest "${out}"`,{stdio:'inherit'});return out;
+  // zoompan holds d=500 output frames (25fps * 20s); increment reaches the 1.08 cap exactly at the last frame
+  // instead of within the first ~3.5s, so the Ken Burns zoom runs smoothly for the whole clip instead of freezing.
+  const zoomStep=(0.08/(VIDEO_SECONDS*25)).toFixed(6);
+  const fc=`[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,zoompan=z='min(zoom+${zoomStep},1.08)':d=${VIDEO_SECONDS*25}:s=1080x1920:fps=25[bg];[bg][2:v]overlay=0:0:format=auto[v];[1:a]volume=-6dB[a]`;
+  execSync(`ffmpeg -y -loop 1 -i "${image}" -i "${BGM_FILE}" -loop 1 -i "${overlay}" -filter_complex "${fc}" -map "[v]" -map "[a]" -t ${VIDEO_SECONDS} -c:v libx264 -preset veryfast -crf 20 -pix_fmt yuv420p -c:a aac -b:a 128k -shortest "${out}"`,{stdio:'inherit'});return out;
+}
+function buildDescription(quote){
+  const hashtags='#TeluguQuotes #JeevithaSatyalu #TeluguMotivation #LifeWisdom #TeluguShorts #MotivationalQuotes #InspirationalQuotes #TeluguStatus #Shorts';
+  return `${quote}\n\n✨ ప్రతిరోజూ ఒక కొత్త జీవిత సత్యం కోసం ఈ ఛానల్‌ని ఫాలో అవ్వండి.\nమీకు ఈ మాట నచ్చిందా? కామెంట్ చేసి చెప్పండి 💬\n\n${hashtags}`;
 }
 async function upload(video,title,quote){
   const auth=new google.auth.OAuth2(YT_CLIENT_ID,YT_CLIENT_SECRET);auth.setCredentials({refresh_token:YT_REFRESH_TOKEN});
   const yt=google.youtube({version:'v3',auth});
-  const r=await yt.videos.insert({part:['snippet','status'],requestBody:{snippet:{title:title.slice(0,95),description:`${quote}\n\nOriginal Telugu life-wisdom quote with a quote-specific cinematic image.`,tags:['telugu quotes','telugu motivational quotes','life wisdom shorts','telugu shorts','self improvement','జీవిత సత్యాలు'],categoryId:'27'},status:{privacyStatus:'private',selfDeclaredMadeForKids:false}},media:{body:fs.createReadStream(video)}});
+  const r=await yt.videos.insert({part:['snippet','status'],requestBody:{snippet:{title:title.slice(0,95),description:buildDescription(quote),tags:['telugu quotes','telugu motivational quotes','life wisdom shorts','telugu shorts','self improvement','జీవిత సత్యాలు','motivational quotes','inspirational quotes','telugu status'],categoryId:'27'},status:{privacyStatus:'private',selfDeclaredMadeForKids:false}},media:{body:fs.createReadStream(video)}});
   const url=`https://www.youtube.com/watch?v=${r.data.id}`;
   const studioUrl=`https://studio.youtube.com/video/${r.data.id}/edit`;
   log(`Uploaded as PRIVATE (pending your review): ${url}`);
@@ -124,6 +148,6 @@ async function main(){
   if(!fs.existsSync(BGM_FILE))throw new Error(`Bundled BGM file missing: ${BGM_FILE}`);
   log('Run: quote (Telugu script) + ONE full-screen matching image + fixed channel BGM. NO VOICE. Uploads PRIVATE for review.');
   const q=await makeQuote();log(`SCREEN (${countWords(q.screen)} words): ${q.screen}`);log(`IMAGE: ${q.image}`);
-  const image=await makeImage(q.image);const video=await render(image,q.screen);await upload(video,q.title,q.screen);saveState(q.title);log('Done. Waiting on your manual review/publish.');
+  const image=await makeImage(q.image);const video=await render(image,q.screen);await upload(video,q.title,q.screen);saveState(q.title,q.screen);log('Done. Waiting on your manual review/publish.');
 }
 main().catch(e=>{console.error('FAILED:',e.stack||e);process.exit(1);});
