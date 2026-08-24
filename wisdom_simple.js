@@ -127,8 +127,8 @@ function overlayHtmlPartial(words,revealFrac){
   return `<!doctype html><html><head><meta charset="utf-8"><style>
     @font-face{font-family:'TeluguFont';src:url('file://${TELUGU_FONT}');}
     html,body{margin:0;padding:0;width:1080px;height:1920px;background:transparent;}
-    .box{position:absolute;left:55px;top:650px;width:970px;height:620px;background:rgba(0,0,0,0.26);display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 60px;}
-    .txt{font-family:'TeluguFont',sans-serif;font-size:54px;line-height:1.5;color:#fff;text-align:center;text-shadow:2px 3px 4px rgba(0,0,0,0.9);width:850px;}
+    .box{position:absolute;left:55px;top:650px;width:970px;height:620px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 60px;}
+    .txt{font-family:'TeluguFont',sans-serif;font-size:54px;line-height:1.5;color:#fff;text-align:center;text-shadow:0 0 14px rgba(0,0,0,0.95),0 0 28px rgba(0,0,0,0.85),2px 3px 4px rgba(0,0,0,0.9);width:850px;}
   </style></head><body><div class="box"><div class="txt">${inner}</div></div></body></html>`;
 }
 const FADE_STEPS=[0.25,0.5,0.75,1]; // opacity/rise steps captured per newly-appearing word
