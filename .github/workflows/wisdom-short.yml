@@ -31,27 +31,20 @@ jobs:
         timeout-minutes: 3
         run: |
           sudo apt-get update -o Acquire::Retries=3
-          sudo apt-get install -y --no-install-recommends ffmpeg fonts-teluguvijayam
+          sudo apt-get install -y --no-install-recommends ffmpeg fonts-noto-extra
 
-      - name: Verify ffmpeg and font
+      - name: Verify ffmpeg, font and Chrome
         run: |
           ffmpeg -version
-          test -f /usr/share/fonts/truetype/teluguvijayam/ramabhadra.ttf
-
-      - name: Install Pillow (Telugu text shaping via raqm)
-        timeout-minutes: 3
-        run: |
-          python3 -m pip install --quiet --break-system-packages pillow
-          python3 -c "from PIL import features; assert features.check('raqm'), 'Pillow built without raqm (complex text shaping)'"
+          test -f /usr/share/fonts/truetype/noto/NotoSansTelugu-SemiBold.ttf
+          command -v google-chrome-stable || command -v google-chrome || command -v chromium-browser || command -v chromium
 
       - name: Install dependencies
         timeout-minutes: 3
         run: npm install --no-audit --no-fund
 
       - name: Verify source
-        run: |
-          node --check wisdom_simple.js
-          python3 -m py_compile render_text.py
+        run: node --check wisdom_simple.js
 
       - name: Generate and upload (private, pending review)
         timeout-minutes: 15

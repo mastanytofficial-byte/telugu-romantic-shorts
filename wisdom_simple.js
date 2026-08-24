@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 const { google } = require('googleapis');
+const puppeteer = require('puppeteer-core');
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const YT_CLIENT_ID = process.env.YT_CLIENT_ID;
@@ -12,7 +13,8 @@ const WORK_DIR = path.join(__dirname, 'work');
 const STATE_FILE = path.join(__dirname, 'last-article.json');
 const REVIEW_FILE = path.join(WORK_DIR, 'review.txt');
 const BGM_FILE = path.join(__dirname, 'assets', 'bgm.mp3');
-const RENDER_TEXT_SCRIPT = path.join(__dirname, 'render_text.py');
+const TELUGU_FONT = '/usr/share/fonts/truetype/noto/NotoSansTelugu-SemiBold.ttf';
+const CHROME_PATH = process.env.CHROME_PATH || ['/usr/bin/google-chrome-stable','/usr/bin/google-chrome','/usr/bin/chromium-browser','/usr/bin/chromium'].find(p=>fs.existsSync(p));
 const MIN_WORDS = 16;
 const MAX_WORDS = 36;
 const VIDEO_SECONDS = 20;
@@ -80,10 +82,28 @@ async function makeImage(prompt){
   const p=path.join(WORK_DIR,'background.jpg'); fs.writeFileSync(p,b); log('Created ONE quote-specific full-screen AI image.'); return p;
 }
 
-function render(image,quote){
-  const out=path.join(WORK_DIR,'output.mp4'),txt=path.join(WORK_DIR,'quote.txt'),overlay=path.join(WORK_DIR,'overlay.png');
-  fs.writeFileSync(txt,quote,'utf8');
-  execSync(`python3 "${RENDER_TEXT_SCRIPT}" "${txt}" "${overlay}"`,{stdio:'inherit'});
+function stripEmoji(s){return String(s||'').replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}]/gu,'').trim();}
+async function renderOverlay(quote,outPath){
+  if(!CHROME_PATH) throw new Error('No Chrome/Chromium binary found to render Telugu text');
+  const safeText=stripEmoji(quote).replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const html=`<!doctype html><html><head><meta charset="utf-8"><style>
+    @font-face{font-family:'TeluguFont';src:url('file://${TELUGU_FONT}');}
+    html,body{margin:0;padding:0;width:1080px;height:1920px;background:transparent;}
+    .box{position:absolute;left:55px;top:650px;width:970px;height:620px;background:rgba(0,0,0,0.26);display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 60px;}
+    .txt{font-family:'TeluguFont',sans-serif;font-size:46px;line-height:1.5;color:#fff;text-align:center;text-shadow:2px 3px 4px rgba(0,0,0,0.9);width:850px;}
+  </style></head><body><div class="box"><div class="txt">${safeText}</div></div></body></html>`;
+  const browser=await puppeteer.launch({executablePath:CHROME_PATH,headless:true,args:['--no-sandbox','--disable-gpu']});
+  try{
+    const page=await browser.newPage();
+    await page.setViewport({width:1080,height:1920});
+    await page.setContent(html,{waitUntil:'networkidle0'});
+    await page.evaluate(()=>document.fonts.ready);
+    await page.screenshot({path:outPath,omitBackground:true});
+  }finally{await browser.close();}
+}
+async function render(image,quote){
+  const out=path.join(WORK_DIR,'output.mp4'),overlay=path.join(WORK_DIR,'overlay.png');
+  await renderOverlay(quote,overlay);
   const fc=`[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,zoompan=z='min(zoom+0.0009,1.08)':d=500:s=1080x1920:fps=25[bg];[bg][2:v]overlay=0:0:format=auto[v]`;
   execSync(`ffmpeg -y -loop 1 -i "${image}" -i "${BGM_FILE}" -loop 1 -i "${overlay}" -filter_complex "${fc}" -map "[v]" -map 1:a -t ${VIDEO_SECONDS} -c:v libx264 -preset veryfast -crf 20 -pix_fmt yuv420p -c:a aac -b:a 128k -shortest "${out}"`,{stdio:'inherit'});return out;
 }
@@ -104,6 +124,6 @@ async function main(){
   if(!fs.existsSync(BGM_FILE))throw new Error(`Bundled BGM file missing: ${BGM_FILE}`);
   log('Run: quote (Telugu script) + ONE full-screen matching image + fixed channel BGM. NO VOICE. Uploads PRIVATE for review.');
   const q=await makeQuote();log(`SCREEN (${countWords(q.screen)} words): ${q.screen}`);log(`IMAGE: ${q.image}`);
-  const image=await makeImage(q.image);const video=render(image,q.screen);await upload(video,q.title,q.screen);saveState(q.title);log('Done. Waiting on your manual review/publish.');
+  const image=await makeImage(q.image);const video=await render(image,q.screen);await upload(video,q.title,q.screen);saveState(q.title);log('Done. Waiting on your manual review/publish.');
 }
 main().catch(e=>{console.error('FAILED:',e.stack||e);process.exit(1);});
