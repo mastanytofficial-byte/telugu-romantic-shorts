@@ -1,7 +1,7 @@
 {
-  "runCount": 23,
-  "lastTitle": "లోపల బలం",
-  "lastDate": "2026-08-25T03:39:42.590Z",
+  "runCount": 24,
+  "lastTitle": "నమ్మకం విలువ",
+  "lastDate": "2026-08-25T04:24:24.636Z",
   "used": [
     {
       "title": "చిన్న ప్రయత్నం, పెద్ద ఫలం",
@@ -83,6 +83,11 @@
       "title": "లోపల బలం",
       "screen": "మనలోని ఆత్మవిశ్వాసం ప్రతి కష్టమైన రోజును దాటించే అసలైన బలం, అది నిశ్శబ్దంగా మనతో నడుస్తుంది, అవసరమైనప్పుడు ధైర్యంగా ముందుకు తీసుకెళ్తుంది.",
       "image": "silhouette of a person standing tall against a stormy sky that is clearing to sunlight, inner strength and hope, cinematic photography, vertical composition"
+    },
+    {
+      "title": "నమ్మకం విలువ",
+      "screen": "నిన్ను నువ్వు నమ్మడం అంటే ప్రతి సమస్య సులభమవుతుందని కాదు, కానీ ప్రతి సమస్యను ఎదుర్కొనే ధైర్యం నీలో పెరుగుతుందని అర్థం.",
+      "image": "confident solitary figure overlooking a vast valley at sunrise, subtle warm light, reflective hopeful mood, cinematic vertical photography"
     }
   ]
 }
