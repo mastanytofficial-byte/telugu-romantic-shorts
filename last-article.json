@@ -1,7 +1,7 @@
 {
-  "runCount": 16,
-  "lastTitle": "మొదటి అడుగు",
-  "lastDate": "2026-08-25T01:24:50.995Z",
+  "runCount": 17,
+  "lastTitle": "కొత్త పాఠం",
+  "lastDate": "2026-08-25T01:34:54.878Z",
   "used": [
     {
       "title": "చిన్న ప్రయత్నం, పెద్ద ఫలం",
@@ -48,6 +48,11 @@
       "title": "మొదటి అడుగు",
       "screen": "కష్టపడిన ప్రతి క్షణం వృథా కాదు, ఆ కష్టం వెనుక దాగి ఉన్న అనుభవం మనకి కొత్త బలాన్ని ఇస్తూ ముందుకు నడిపిస్తుంది",
       "image": "lone figure taking the first step onto a misty mountain trail at sunrise, soft golden light, quiet determined atmosphere, cinematic photography, vertical composition"
+    },
+    {
+      "title": "కొత్త పాఠం",
+      "screen": "ప్రతి వైఫల్యం వెనుక ఒక కొత్త పాఠం దాగి ఉంటుంది, ఆ పాఠాన్ని అర్థం చేసుకున్న ప్రతి ఒక్కరు మరింత బలంగా మారి ముందుకు సాగిపోతారు",
+      "image": "person standing before a cracked open door with warm light spilling through, symbolic of new beginnings after setback, calm hopeful mood, cinematic photography"
     }
   ]
 }
