@@ -83,10 +83,14 @@ async function sleep(ms){return new Promise(res=>setTimeout(res,ms));}
 // instead of crashing the whole job.
 async function groq(prompt,model=PRIMARY_MODEL,attempt=1){
   // The fallback model (openai/gpt-oss-20b) is a reasoning model that burns its whole completion
-  // budget on hidden chain-of-thought before ever writing the actual answer — every fallback-model
-  // call failed with finish_reason:"length" and empty content at the previous (unset -> ~2048 token)
-  // default. A generous explicit cap leaves room for both the reasoning and the real output.
-  const r=await get('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${GROQ_API_KEY}`},body:JSON.stringify({model,temperature:.85,max_tokens:8192,messages:[{role:'user',content:prompt}]})});
+  // budget on hidden chain-of-thought before ever writing the actual answer, so it needs a generous
+  // cap. But Groq's TPM limit (8000 on this account) counts max_tokens itself against the per-minute
+  // budget regardless of model — an 8192 cap alone exceeded it and made every single call (both
+  // models) fail instantly with HTTP 413, before any tokens were even generated. Keep the fallback's
+  // budget under the TPM ceiling (with room for the prompt) and give the non-reasoning primary model
+  // a much smaller cap, since it doesn't need reasoning space.
+  const maxTokens=model===FALLBACK_MODEL?6000:1536;
+  const r=await get('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${GROQ_API_KEY}`},body:JSON.stringify({model,temperature:.85,max_tokens:maxTokens,messages:[{role:'user',content:prompt}]})});
   const d=await r.json();
   if(r.status===429&&attempt<=3){
     const waitSeconds=Number(d?.error?.message?.match(/try again in ([\d.]+)s/)?.[1])||15;
