@@ -1,7 +1,7 @@
 {
-  "runCount": 25,
-  "lastTitle": "ప్రయత్నం విలువ",
-  "lastDate": "2026-08-25T04:50:14.977Z",
+  "runCount": 26,
+  "lastTitle": "గమ్యం వైపు",
+  "lastDate": "2026-08-25T05:09:59.077Z",
   "used": [
     {
       "title": "చిన్న ప్రయత్నం, పెద్ద ఫలం",
@@ -93,6 +93,11 @@
       "title": "ప్రయత్నం విలువ",
       "screen": "ప్రతి ప్రయత్నం వెంటనే ఫలితం ఇవ్వకపోవచ్చు, కానీ ప్రతి ప్రయత్నం మనలో ఒక కొత్త అనుభవాన్ని పెంచుతుంది, అదే అనుభవం తరువాతి అడుగును బలంగా చేస్తుంది.",
       "image": "person climbing a long stone staircase toward sunrise, gradual progress, cinematic vertical photography"
+    },
+    {
+      "title": "గమ్యం వైపు",
+      "screen": "లక్ష్యం వైపు వేసే ప్రతి చిన్న అడుగు కూడా విలువైనదే, ఆ అడుగులు కలిసినప్పుడు దూరమైన గమ్యం దగ్గరవుతుంది, నమ్మకంతో ముందుకు సాగాలి.",
+      "image": "person walking a long winding path toward a distant sunrise on the horizon, focused determined journey, cinematic photography, vertical composition"
     }
   ]
 }
