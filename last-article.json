@@ -1,7 +1,7 @@
 {
-  "runCount": 22,
-  "lastTitle": "నమ్మకపు పతనం",
-  "lastDate": "2026-08-25T03:04:31.164Z",
+  "runCount": 23,
+  "lastTitle": "లోపల బలం",
+  "lastDate": "2026-08-25T03:39:42.590Z",
   "used": [
     {
       "title": "చిన్న ప్రయత్నం, పెద్ద ఫలం",
@@ -78,6 +78,11 @@
       "title": "నమ్మకపు పతనం",
       "screen": "అతిగా విశ్వాసం పెట్టుకుంటే మనం తప్పుదోవలోకి లాగబడతాం; నిజమైన విశ్వాసం మాత్రం మన అంతరాత్మలోని సత్యం ద్వారా మార్గనిర్దేశనం చేస్తుంది, స్వయంగా మన మార్గాన్ని చూపిస్తుంది.",
       "image": "A cinematic 9:16 portrait of a lone wanderer on a misty mountain ridge at dawn, gazing over a sprawling valley, with soft sunrise light illuminating the horizon, evoking introspection and hope."
+    },
+    {
+      "title": "లోపల బలం",
+      "screen": "మనలోని ఆత్మవిశ్వాసం ప్రతి కష్టమైన రోజును దాటించే అసలైన బలం, అది నిశ్శబ్దంగా మనతో నడుస్తుంది, అవసరమైనప్పుడు ధైర్యంగా ముందుకు తీసుకెళ్తుంది.",
+      "image": "silhouette of a person standing tall against a stormy sky that is clearing to sunlight, inner strength and hope, cinematic photography, vertical composition"
     }
   ]
 }
