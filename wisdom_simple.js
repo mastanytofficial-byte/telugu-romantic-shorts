@@ -174,16 +174,13 @@ function splitChunks(words){
   return chunks;
 }
 function normalizeWord(w){return String(w||'').replace(/^[,.;:!?"'…]+|[,.;:!?"'…]+$/g,'');}
-// Prefer the word the model itself marked as semantically important (see the *asterisk* instruction
-// in the prompt) — far more accurate than guessing. Only falls back to "longest word in the chunk"
-// when a chunk has no marked word in it (e.g. the model under-marked, or dropped punctuation differs).
+// Only highlight a word the model itself marked as semantically important (see the *asterisk*
+// instruction in the prompt). No fallback to a "longest word" guess anymore — that heuristic was
+// exactly the wrong-word-gets-highlighted problem being fixed here, so a chunk with nothing marked
+// in it just shows no highlight at all rather than a plausible-but-wrong one.
 function pickHighlightIndex(chunkWords,highlightWords=[]){
   const marked=new Set(highlightWords.map(normalizeWord));
-  const matchIdx=chunkWords.findIndex(w=>marked.has(normalizeWord(w)));
-  if(matchIdx>=0)return matchIdx;
-  let idx=0,maxLen=0;
-  chunkWords.forEach((w,i)=>{const len=[...normalizeWord(w)].length;if(len>maxLen){maxLen=len;idx=i;}});
-  return idx;
+  return chunkWords.findIndex(w=>marked.has(normalizeWord(w)));
 }
 // Segments by grapheme cluster (not JS string index) so a Telugu conjunct/matra is always revealed as
 // one whole unit during the typewriter animation, never split mid-glyph.
@@ -206,30 +203,34 @@ function chunkHtmlPage(inner){
   return `<!doctype html><html><head><meta charset="utf-8"><style>
     @font-face{font-family:'TeluguFont';src:url('file://${TELUGU_FONT}');}
     html,body{margin:0;padding:0;width:1080px;height:1920px;background:transparent;}
-    .box{position:absolute;left:40px;top:760px;width:1000px;height:400px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 40px;}
-    .txt{font-family:'TeluguFont',sans-serif;font-size:70px;line-height:1.4;color:#fff;text-align:center;text-shadow:0 0 16px rgba(0,0,0,0.95),0 0 30px rgba(0,0,0,0.85),2px 3px 4px rgba(0,0,0,0.9);width:1000px;}
+    .box{position:absolute;left:40px;top:560px;width:1000px;height:800px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 40px;}
+    .txt{font-family:'TeluguFont',sans-serif;font-size:58px;line-height:1.55;color:#fff;text-align:center;text-shadow:0 0 16px rgba(0,0,0,0.95),0 0 30px rgba(0,0,0,0.85),2px 3px 4px rgba(0,0,0,0.9);width:1000px;}
     .hi{color:#FFD54A;text-shadow:0 0 18px rgba(255,213,74,0.9),0 0 34px rgba(255,213,74,0.6),2px 3px 4px rgba(0,0,0,0.9);}
   </style></head><body><div class="box"><div class="txt">${inner}</div></div></body></html>`;
 }
 // Renders each chunk as a typewriter reveal (grapheme by grapheme, frame-aligned) that settles into a
-// held frame for the rest of CHUNK_HOLD_SECONDS, then hard-cuts to the next chunk — a fast, high-energy
-// style instead of one line slowly accumulating the whole quote. Total video length is now however long
-// the chunk timeline actually runs, not a fixed constant.
+// held frame for the rest of CHUNK_HOLD_SECONDS, then moves on to the next chunk — but unlike the first
+// version of this, completed chunks stay on screen (accumulating into the full quote, wrapping across
+// lines) instead of being replaced. Total video length is however long the chunk timeline actually
+// runs, not a fixed constant.
 async function renderChunkSequence(quote,highlightWords=[]){
   if(!CHROME_PATH) throw new Error('No Chrome/Chromium binary found to render Telugu text');
   fs.rmSync(FRAMES_DIR,{recursive:true,force:true});
   fs.mkdirSync(FRAMES_DIR,{recursive:true});
   const chunks=splitChunks(stripEmoji(quote).trim().split(/\s+/));
+  const wordGraphemesPerChunk=chunks.map(cw=>cw.map(w=>graphemes(w)));
+  const highlightIdxPerChunk=chunks.map(cw=>pickHighlightIndex(cw,highlightWords));
   const browser=await puppeteer.launch({executablePath:CHROME_PATH,headless:true,args:['--no-sandbox','--disable-gpu']});
   const timeline=[];
   try{
     const page=await browser.newPage();
     await page.setViewport({width:1080,height:1920});
     for(let ci=0;ci<chunks.length;ci++){
-      const chunkWords=chunks[ci];
-      const wordGraphemes=chunkWords.map(w=>graphemes(w));
+      const wordGraphemes=wordGraphemesPerChunk[ci];
+      const highlightIdx=highlightIdxPerChunk[ci];
       const totalGraphemes=wordGraphemes.reduce((s,g)=>s+g.length,0);
-      const highlightIdx=pickHighlightIndex(chunkWords,highlightWords);
+      // every earlier chunk, fully typed and static — reuses chunkFrameInner at its final reveal count
+      const priorHtml=wordGraphemesPerChunk.slice(0,ci).map((wg,i)=>chunkFrameInner(wg,highlightIdxPerChunk[i],wg.reduce((s,g)=>s+g.length,0))).join(' ');
       const maxSteps=Math.max(1,Math.floor(TYPE_BUDGET_SECONDS/TYPE_STEP_SECONDS));
       const stride=Math.max(1,Math.ceil(totalGraphemes/maxSteps));
       const revealCounts=[];
@@ -237,7 +238,8 @@ async function renderChunkSequence(quote,highlightWords=[]){
       revealCounts.push(totalGraphemes);
       const isLastChunk=ci===chunks.length-1;
       for(let si=0;si<revealCounts.length;si++){
-        const inner=chunkFrameInner(wordGraphemes,highlightIdx,revealCounts[si]);
+        const currentHtml=chunkFrameInner(wordGraphemes,highlightIdx,revealCounts[si]);
+        const inner=priorHtml?`${priorHtml} ${currentHtml}`:currentHtml;
         await page.setContent(chunkHtmlPage(inner),{waitUntil:'load'});
         await page.evaluate(()=>document.fonts.ready);
         const p=path.join(FRAMES_DIR,`c${String(ci).padStart(3,'0')}_${si}.png`);
