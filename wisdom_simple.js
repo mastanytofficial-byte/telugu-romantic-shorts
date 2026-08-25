@@ -224,9 +224,9 @@ function chunkHtmlPage(inner,topLabel){
     @font-face{font-family:'TeluguFont';src:url('file://${TELUGU_FONT}');}
     html,body{margin:0;padding:0;width:1080px;height:1920px;background:transparent;}
     .box{position:absolute;left:40px;top:560px;width:1000px;height:800px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 40px;}
-    .txt{font-family:'TeluguFont',sans-serif;font-size:58px;font-weight:700;line-height:1.55;color:#fff;text-align:center;text-shadow:0 0 16px rgba(0,0,0,0.95),0 0 30px rgba(0,0,0,0.85),2px 3px 4px rgba(0,0,0,0.9);width:1000px;-webkit-text-stroke:2px rgba(0,0,0,0.85);}
+    .txt{font-family:'TeluguFont',sans-serif;font-size:58px;font-weight:700;line-height:1.55;color:#fff;text-align:center;text-shadow:0 0 16px rgba(0,0,0,0.95),0 0 30px rgba(0,0,0,0.85),2px 3px 4px rgba(0,0,0,0.9);width:1000px;-webkit-text-stroke:0.8px rgba(0,0,0,0.85);}
     .hi{color:#FFD54A;text-shadow:0 0 18px rgba(255,213,74,0.9),0 0 34px rgba(255,213,74,0.6),2px 3px 4px rgba(0,0,0,0.9);}
-    .top{position:absolute;left:0;top:140px;width:1080px;text-align:center;font-family:'TeluguFont',sans-serif;font-size:42px;font-weight:700;letter-spacing:2px;color:#fff;text-shadow:0 0 14px rgba(0,0,0,0.95),2px 3px 4px rgba(0,0,0,0.9);-webkit-text-stroke:1.5px rgba(0,0,0,0.85);}
+    .top{position:absolute;left:0;top:140px;width:1080px;text-align:center;font-family:'TeluguFont',sans-serif;font-size:42px;font-weight:700;letter-spacing:2px;color:#fff;text-shadow:0 0 14px rgba(0,0,0,0.95),2px 3px 4px rgba(0,0,0,0.9);-webkit-text-stroke:0.8px rgba(0,0,0,0.85);}
   </style></head><body>${topHtml}<div class="box"><div class="txt">${inner}</div></div></body></html>`;
 }
 // Renders each chunk as a typewriter reveal (grapheme by grapheme, frame-aligned) that settles into a
