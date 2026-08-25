@@ -193,14 +193,17 @@ function pickHighlightIndex(chunkWords,highlightWords=[]){
 // one whole unit during the typewriter animation, never split mid-glyph.
 const GRAPHEME_SEGMENTER=new Intl.Segmenter('te',{granularity:'grapheme'});
 function graphemes(s){return Array.from(GRAPHEME_SEGMENTER.segment(s),seg=>seg.segment);}
-function chunkFrameInner(wordGraphemes,highlightIdx,revealed){
+// dim=true renders every word in a low-contrast gray regardless of highlight — used for already-typed
+// chunks so viewer focus stays on the newest (bright) line instead of the whole accumulated paragraph
+// competing for attention equally.
+function chunkFrameInner(wordGraphemes,highlightIdx,revealed,dim=false){
   let remaining=revealed;
   const parts=[];
   for(let wi=0;wi<wordGraphemes.length&&remaining>0;wi++){
     const g=wordGraphemes[wi];
     const take=Math.min(remaining,g.length);
     if(take<=0)continue;
-    const cls=wi===highlightIdx?'hi':'w';
+    const cls=dim?'done':(wi===highlightIdx?'hi':'w');
     parts.push(`<span class="${cls}">${escapeHtml(g.slice(0,take).join(''))}</span>`);
     remaining-=take;
   }
@@ -213,6 +216,7 @@ function chunkHtmlPage(inner){
     .box{position:absolute;left:40px;top:560px;width:1000px;height:800px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 40px;}
     .txt{font-family:'TeluguFont',sans-serif;font-size:58px;line-height:1.55;color:#fff;text-align:center;text-shadow:0 0 16px rgba(0,0,0,0.95),0 0 30px rgba(0,0,0,0.85),2px 3px 4px rgba(0,0,0,0.9);width:1000px;}
     .hi{color:#FFD54A;text-shadow:0 0 18px rgba(255,213,74,0.9),0 0 34px rgba(255,213,74,0.6),2px 3px 4px rgba(0,0,0,0.9);}
+    .done{color:#8d96a3;text-shadow:1px 2px 3px rgba(0,0,0,0.7);}
   </style></head><body><div class="box"><div class="txt">${inner}</div></div></body></html>`;
 }
 // Renders each chunk as a typewriter reveal (grapheme by grapheme, frame-aligned) that settles into a
@@ -236,8 +240,8 @@ async function renderChunkSequence(quote,highlightWords=[]){
       const wordGraphemes=wordGraphemesPerChunk[ci];
       const highlightIdx=highlightIdxPerChunk[ci];
       const totalGraphemes=wordGraphemes.reduce((s,g)=>s+g.length,0);
-      // every earlier chunk, fully typed and static — reuses chunkFrameInner at its final reveal count
-      const priorHtml=wordGraphemesPerChunk.slice(0,ci).map((wg,i)=>chunkFrameInner(wg,highlightIdxPerChunk[i],wg.reduce((s,g)=>s+g.length,0))).join(' ');
+      // every earlier chunk, fully typed and dimmed to gray so viewer focus stays on the newest line
+      const priorHtml=wordGraphemesPerChunk.slice(0,ci).map((wg,i)=>chunkFrameInner(wg,highlightIdxPerChunk[i],wg.reduce((s,g)=>s+g.length,0),true)).join(' ');
       const maxSteps=Math.max(1,Math.floor(TYPE_BUDGET_SECONDS/TYPE_STEP_SECONDS));
       const stride=Math.max(1,Math.ceil(totalGraphemes/maxSteps));
       const revealCounts=[];
