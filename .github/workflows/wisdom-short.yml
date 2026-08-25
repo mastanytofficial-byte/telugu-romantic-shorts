@@ -3,7 +3,9 @@ name: Wisdom Quote Short
 on:
   workflow_dispatch:
   schedule:
-    - cron: '30 3 * * *'
+    # 14:00 UTC = 19:30 IST — evening slot when Telugu regional-content
+    # viewership is typically higher than the previous 09:00 IST run.
+    - cron: '0 14 * * *'
 
 permissions:
   contents: write
