@@ -1,7 +1,7 @@
 {
-  "runCount": 27,
-  "lastTitle": "సరైన దారి",
-  "lastDate": "2026-08-25T05:21:58.431Z",
+  "runCount": 28,
+  "lastTitle": "ఓర్పు ఫలితం",
+  "lastDate": "2026-08-25T05:30:55.582Z",
   "used": [
     {
       "title": "చిన్న ప్రయత్నం, పెద్ద ఫలం",
@@ -103,6 +103,11 @@
       "title": "సరైన దారి",
       "screen": "దారి కష్టంగా ఉందని అది తప్పు దారి అని కాదు, కొన్ని ప్రయాణాలు మనల్ని పరీక్షించిన తర్వాతే సరైన గమ్యాన్ని చూపిస్తాయి, అందుకే ముందుకు సాగాలి.",
       "image": "winding mountain trail through mist toward a bright horizon, cinematic vertical photography"
+    },
+    {
+      "title": "ఓర్పు ఫలితం",
+      "screen": "ఓర్పుతో వేసిన అడుగులు నెమ్మదిగా అనిపించినా, అవే మనల్ని స్థిరమైన మార్గంలో ముందుకు తీసుకెళ్తాయి, సరైన సమయం వచ్చినప్పుడు వాటి విలువ తెలుస్తుంది.",
+      "image": "small plant growing beside a quiet stone path at sunrise, gentle hopeful light, cinematic vertical photography"
     }
   ]
 }
