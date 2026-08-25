@@ -123,7 +123,7 @@ async function makeQuote(){
   const theme=themes[state().runCount%themes.length];
   const prompt=`Create ONE completely original motivational life-wisdom quote for a YouTube Short, in the Telugu language. Theme: ${theme}.
 TITLE: a short, grammatically complete, correctly spelled 2-4 word Telugu phrase that captures the quote's core idea, written entirely in native Telugu script. Double-check the spelling of every word before answering — for example "లక్ష్యం" (goal) must keep its "్యం" ending, do not drop it; and "ఓర్పు" (patience/endurance) must not be corrupted into the meaningless "ఎర్పు".
-SCREEN: exactly 16-36 words, written ENTIRELY in native Telugu script (Unicode Telugu letters). Do NOT use English/Latin letters anywhere in this line, not even for names or filler. No hashtags. Do NOT quote or reference any real person, book, movie, song, scripture, or existing proverb — the thought must be entirely original. Do NOT make factual claims, statistics, or promises about health, money, or results. Natural Telugu, wise, mature, simple and memorable. Do not write a short slogan. Make one flowing thought with 2-3 connected clauses. Wrap the single most emotionally/semantically important word of each clause in *asterisks* (e.g. "మార్పు రాకుండా *జీవితం* నిలిచిపోతుంది") so it can be visually highlighted — mark only ONE word per clause (roughly 3-4 marked words total across the whole line), never a whole phrase, never a grammatical filler word (postpositions, connectors), only the word that actually carries the meaning.
+SCREEN: exactly 16-36 words, written ENTIRELY in native Telugu script (Unicode Telugu letters). Do NOT use English/Latin letters anywhere in this line, not even for names or filler. No hashtags. Do NOT quote or reference any real person, book, movie, song, scripture, or existing proverb — the thought must be entirely original. Do NOT make factual claims, statistics, or promises about health, money, or results. Natural Telugu, wise, mature, simple and memorable. Do not write a short slogan. Make one flowing thought with 2-3 connected clauses. Wrap the single most emotionally/semantically important word of each clause in *asterisks* (e.g. "మార్పు రాకుండా *జీవితం* నిలిచిపోతుంది") so it can be visually highlighted — mark only ONE word per clause (roughly 3-4 marked words total across the whole line), never a whole phrase, never a grammatical filler word (postpositions, connectors), only the word that actually carries the meaning. Wrap the ENTIRE word including any case suffix attached to it — e.g. write "*పట్టుదలతో*" as one fully-wrapped word, never split it as "*పట్టుదల*తో".
 HOOK: a short 4-20 word Telugu sentence, entirely in Telugu script, that teases the quote's idea WITHOUT repeating the SCREEN line word-for-word — phrase it as a curiosity-driven question or statement suitable as the opening line of a YouTube description.
 Before finalizing, silently proofread TITLE, SCREEN and HOOK as a strict native Telugu editor would: verify every single word is a real, standard dictionary Telugu word (never a plausible-looking but non-existent or corrupted spelling — a word that is valid Telugu Unicode but does not actually exist in the language is still wrong), check subject-verb agreement, correct case markers (never attach an accusative "-ని/-ను" to a noun governed by an intransitive verb like పూయు/వికసించు/పెరుగు), transitive vs intransitive verb usage, and natural everyday idiom (e.g. prefer "ఎప్పుడైనా చూసారా" over the unnatural "ఎప్పుడూ చూసారా" in a question). Rewrite silently until every line reads completely natural, grammatically flawless Telugu using only real words before answering.
 MOOD: give 2-4 English mood words only.
@@ -178,9 +178,16 @@ function normalizeWord(w){return String(w||'').replace(/^[,.;:!?"'…]+|[,.;:!?"
 // instruction in the prompt). No fallback to a "longest word" guess anymore — that heuristic was
 // exactly the wrong-word-gets-highlighted problem being fixed here, so a chunk with nothing marked
 // in it just shows no highlight at all rather than a plausible-but-wrong one.
+// Match is substring-based, not exact-equality: Telugu is agglutinative and the model sometimes
+// wraps only the word's root/stem in asterisks with a case suffix glued on right after (e.g.
+// "*పట్టుదల*తో" -> marked word "పట్టుదల", but the actual chunk word is "పట్టుదలతో") — an exact-equality
+// match would silently fail to highlight that word at all.
 function pickHighlightIndex(chunkWords,highlightWords=[]){
-  const marked=new Set(highlightWords.map(normalizeWord));
-  return chunkWords.findIndex(w=>marked.has(normalizeWord(w)));
+  const marked=highlightWords.map(normalizeWord).filter(Boolean);
+  return chunkWords.findIndex(w=>{
+    const nw=normalizeWord(w);
+    return marked.some(m=>nw.includes(m)||m.includes(nw));
+  });
 }
 // Segments by grapheme cluster (not JS string index) so a Telugu conjunct/matra is always revealed as
 // one whole unit during the typewriter animation, never split mid-glyph.
