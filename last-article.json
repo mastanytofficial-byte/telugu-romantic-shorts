@@ -1,7 +1,7 @@
 {
-  "runCount": 30,
-  "lastTitle": "విజయ మార్గం",
-  "lastDate": "2026-08-25T10:57:06.419Z",
+  "runCount": 31,
+  "lastTitle": "కాలం పాఠం",
+  "lastDate": "2026-08-25T12:23:48.094Z",
   "used": [
     {
       "title": "చిన్న ప్రయత్నం, పెద్ద ఫలం",
@@ -118,6 +118,11 @@
       "title": "విజయ మార్గం",
       "screen": "ఎప్పుడూ ముందుకు సాగుతూ, మనసులో విశ్వాసం కలిగి ఉంటే, ప్రతి అడ్డంకి ఒక కొత్త అవకాశం అవుతుంది, జీవితం మనకు ఇస్తున్న పరీక్షలను ఆనందంగా స్వీకరించాలి.",
       "image": "A sunrise over a quiet mountain path, with a lone runner ascending, clouds reflecting golden light, cinematic depth, 9:16 aspect ratio, soft focus, dramatic lighting."
+    },
+    {
+      "title": "కాలం పాఠం",
+      "screen": "కాలం మనకు కొన్ని సమాధానాలు మాటలతో ఇవ్వదు, అనుభవాల ద్వారా చూపిస్తుంది, అర్థం చేసుకున్న కొద్దీ జీవితం మీద మన దృష్టి మరింత స్పష్టమవుతుంది.",
+      "image": "old path through trees with morning mist and soft sunlight, cinematic vertical photography"
     }
   ]
 }
