@@ -1,7 +1,7 @@
 {
-  "runCount": 20,
-  "lastTitle": "చిన్న ప్రయత్నం",
-  "lastDate": "2026-08-25T02:21:06.637Z",
+  "runCount": 21,
+  "lastTitle": "మార్పు బలం",
+  "lastDate": "2026-08-25T02:39:05.121Z",
   "used": [
     {
       "title": "చిన్న ప్రయత్నం, పెద్ద ఫలం",
@@ -68,6 +68,11 @@
       "title": "చిన్న ప్రయత్నం",
       "screen": "చిన్న ప్రయత్నం… దృఢతతో ప్రారంభిస్తే, తప్పులు చిన్నదిగా ఉంటే కూడా, ప్రతి అడుగు వృద్ధి వైపు నడిపిస్తుంది, చివరికి విజయం మీ కావలసిన మార్గాన్ని ప్రకాశింపజేస్తుంది.",
       "image": "A lone hiker ascending a misty mountain ridge at sunrise, silhouette against golden light, determined expression, soft warm glow, conveying quiet resolve and hopeful progress."
+    },
+    {
+      "title": "మార్పు బలం",
+      "screen": "మార్పు మొదట భయంగా అనిపించవచ్చు, కానీ దాన్ని స్వీకరించినప్పుడు మనలో కొత్త బలం మేల్కొంటుంది, అదే బలం ముందున్న దారిని సులభం చేస్తుంది.",
+      "image": "person stepping from a shadowed doorway into warm morning light, symbolic transition and inner strength, cinematic vertical photography"
     }
   ]
 }
