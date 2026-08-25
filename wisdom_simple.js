@@ -82,7 +82,11 @@ async function sleep(ms){return new Promise(res=>setTimeout(res,ms));}
 // free-tier tokens-per-minute limit mid-run. Retry on HTTP 429 using the wait time Groq reports
 // instead of crashing the whole job.
 async function groq(prompt,model=PRIMARY_MODEL,attempt=1){
-  const r=await get('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${GROQ_API_KEY}`},body:JSON.stringify({model,temperature:.85,messages:[{role:'user',content:prompt}]})});
+  // The fallback model (openai/gpt-oss-20b) is a reasoning model that burns its whole completion
+  // budget on hidden chain-of-thought before ever writing the actual answer — every fallback-model
+  // call failed with finish_reason:"length" and empty content at the previous (unset -> ~2048 token)
+  // default. A generous explicit cap leaves room for both the reasoning and the real output.
+  const r=await get('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${GROQ_API_KEY}`},body:JSON.stringify({model,temperature:.85,max_tokens:8192,messages:[{role:'user',content:prompt}]})});
   const d=await r.json();
   if(r.status===429&&attempt<=3){
     const waitSeconds=Number(d?.error?.message?.match(/try again in ([\d.]+)s/)?.[1])||15;
