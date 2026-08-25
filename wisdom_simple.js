@@ -37,11 +37,11 @@ const MOOD_TOP_LABEL = [[/trust|betray/i,'MINDSET 🧠'],[/success|hard.?work|ef
 function pickTopLabel(mood){const hit=MOOD_TOP_LABEL.find(([re])=>re.test(mood||''));return hit?hit[1]:'LIFE LESSON 💡';}
 
 const FALLBACKS = [
-  { title:'మొదటి అడుగు', screen:'కష్టపడిన ప్రతి క్షణం వృథా కాదు, ఆ కష్టం వెనుక దాగి ఉన్న అనుభవం మనకి కొత్త బలాన్ని ఇస్తూ ముందుకు నడిపిస్తుంది', hook:'ప్రతి కష్టం వెనుక ఏం దాగుందో తెలుసా?', mood:'quiet determination', image:'lone figure taking the first step onto a misty mountain trail at sunrise, soft golden light, quiet determined atmosphere, cinematic photography, vertical composition' },
-  { title:'కొత్త పాఠం', screen:'ప్రతి వైఫల్యం వెనుక ఒక కొత్త పాఠం దాగి ఉంటుంది, ఆ పాఠాన్ని అర్థం చేసుకున్న ప్రతి ఒక్కరు మరింత బలంగా మారి ముందుకు సాగిపోతారు', hook:'వైఫల్యం నిజంగా ఏం నేర్పిస్తుందో ఇక్కడ చూడండి.', mood:'calm resilience', image:'person standing before a cracked open door with warm light spilling through, symbolic of new beginnings after setback, calm hopeful mood, cinematic photography' },
-  { title:'లోపల బలం', screen:'మనలోని ఆత్మ విశ్వాసం ప్రతి కష్టమైన రోజును దాటించే అసలి బలం, అది ఎప్పుడూ మనతో పాటు నడుస్తూ మనకి ధైర్యాన్ని అందిస్తూ ఉంటుంది', hook:'నిజమైన బలం ఎక్కడ నుండి వస్తుందో తెలుసా?', mood:'hopeful strength', image:'silhouette of a person standing tall against a stormy sky that is clearing to sunlight, inner strength and hope, cinematic photography, vertical composition' },
-  { title:'సహనం ఫలం', screen:'సహనంతో ఎదురు చూసే ప్రతి క్షణం వృథా అవ్వదు, అది మనకి సరైన సమయంలో మంచి ఫలితాన్ని తీసుకొచ్చి మన ప్రయత్నానికి నిజమైన విలువ ఇస్తుంది', hook:'సహనం మీకు ఏం ఇస్తుందో తెలుసా?', mood:'warm encouragement', image:'a single sapling growing through cracked rock in warm afternoon light, patience and quiet reward, cinematic photography, vertical composition' },
-  { title:'గమ్యం వైపు', screen:'లక్ష్యం వైపు ప్రతి చిన్న అడుగు కూడా వృథా కాదు, ఆ అడుగులు కలిసి ఒక రోజు మనల్ని గమ్యానికి తీసుకెళ్తాయని నమ్మకంతో ముందుకు సాగాలి', hook:'చిన్న అడుగులు ఎంత దూరం తీసుకెళ్తాయో చూడండి.', mood:'steady focus', image:'person walking a long winding path toward a distant sunrise on the horizon, focused determined journey, cinematic photography, vertical composition' }
+  { title:'మొదటి అడుగు', screen:'కష్టపడిన ప్రతి క్షణం వృథా కాదు, ఆ కష్టం వెనుక దాగి ఉన్న అనుభవం మనకి కొత్త బలాన్ని ఇస్తూ ముందుకు నడిపిస్తుంది.', highlightWords:['బలాన్ని'], hook:'ప్రతి కష్టం వెనుక ఏం దాగుందో తెలుసా?', mood:'quiet determination', image:'lone figure taking the first step onto a misty mountain trail at sunrise, soft golden light, quiet determined atmosphere, cinematic photography, vertical composition' },
+  { title:'కొత్త పాఠం', screen:'ప్రతి వైఫల్యం వెనుక ఒక కొత్త పాఠం దాగి ఉంటుంది, ఆ పాఠాన్ని అర్థం చేసుకున్న ప్రతి ఒక్కరు మరింత బలంగా మారి ముందుకు సాగిపోతారు.', highlightWords:['పాఠం'], hook:'వైఫల్యం నిజంగా ఏం నేర్పిస్తుందో ఇక్కడ చూడండి.', mood:'calm resilience', image:'person standing before a cracked open door with warm light spilling through, symbolic of new beginnings after setback, calm hopeful mood, cinematic photography' },
+  { title:'లోపల బలం', screen:'మనలోని ఆత్మ విశ్వాసం ప్రతి కష్టమైన రోజును దాటించే అసలి బలం, అది ఎప్పుడూ మనతో పాటు నడుస్తూ మనకి ధైర్యాన్ని అందిస్తూ ఉంటుంది.', highlightWords:['ధైర్యాన్ని'], hook:'నిజమైన బలం ఎక్కడ నుండి వస్తుందో తెలుసా?', mood:'hopeful strength', image:'silhouette of a person standing tall against a stormy sky that is clearing to sunlight, inner strength and hope, cinematic photography, vertical composition' },
+  { title:'సహనం ఫలం', screen:'సహనంతో ఎదురు చూసే ప్రతి క్షణం వృథా అవ్వదు, అది మనకి సరైన సమయంలో మంచి ఫలితాన్ని తీసుకొచ్చి మన ప్రయత్నానికి నిజమైన విలువ ఇస్తుంది.', highlightWords:['ఫలితాన్ని'], hook:'సహనం మీకు ఏం ఇస్తుందో తెలుసా?', mood:'warm encouragement', image:'a single sapling growing through cracked rock in warm afternoon light, patience and quiet reward, cinematic photography, vertical composition' },
+  { title:'గమ్యం వైపు', screen:'లక్ష్యం వైపు ప్రతి చిన్న అడుగు కూడా వృథా కాదు, ఆ అడుగులు కలిసి ఒక రోజు మనల్ని గమ్యానికి తీసుకెళ్తాయని నమ్మకంతో ముందుకు సాగాలి.', highlightWords:['గమ్యానికి'], hook:'చిన్న అడుగులు ఎంత దూరం తీసుకెళ్తాయో చూడండి.', mood:'steady focus', image:'person walking a long winding path toward a distant sunrise on the horizon, focused determined journey, cinematic photography, vertical composition' }
 ];
 
 function log(x){ console.log(`[${new Date().toISOString()}] ${x}`); }
@@ -296,11 +296,11 @@ async function render(image,quote,highlightWords=[],topLabel=''){
   // zoompan increment reaches the 1.08 cap exactly on the last frame instead of plateauing early, same
   // fix as before, just recomputed against the now-variable video length.
   const zoomStep=(0.08/frameCount).toFixed(6);
-  const fadeOutStart=Math.max(totalSeconds-1,0).toFixed(2);
   // BGM loops (-stream_loop -1) since video length now varies with quote length instead of being fixed
-  // at the bundled clip's 20s; volume/fade are applied fresh here against the real duration rather than
+  // at the bundled clip's 20s; volume/fade-in applied fresh here against the real duration rather than
   // relying on the fades baked into the source file, which only matched the old fixed-length videos.
-  const fc=`[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,zoompan=z='min(zoom+${zoomStep},1.08)':d=${frameCount}:s=1080x1920:fps=25[bg];[bg][2:v]overlay=0:0:format=auto[v];[1:a]volume=-18dB,afade=t=in:st=0:d=0.5,afade=t=out:st=${fadeOutStart}:d=1[a]`;
+  // No fade-out — audio stays at full volume through the last frame instead of dipping at the end.
+  const fc=`[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,zoompan=z='min(zoom+${zoomStep},1.08)':d=${frameCount}:s=1080x1920:fps=25[bg];[bg][2:v]overlay=0:0:format=auto[v];[1:a]volume=-18dB,afade=t=in:st=0:d=0.5[a]`;
   execSync(`ffmpeg -y -loop 1 -i "${image}" -stream_loop -1 -i "${BGM_FILE}" -f concat -safe 0 -i "${listFile}" -filter_complex "${fc}" -map "[v]" -map "[a]" -t ${totalSeconds.toFixed(2)} -c:v libx264 -preset veryfast -crf 20 -pix_fmt yuv420p -c:a aac -b:a 128k -shortest "${out}"`,{stdio:'inherit'});
   return out;
 }
