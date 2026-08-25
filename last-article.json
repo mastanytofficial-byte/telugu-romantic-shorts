@@ -1,7 +1,7 @@
 {
-  "runCount": 24,
-  "lastTitle": "నమ్మకం విలువ",
-  "lastDate": "2026-08-25T04:24:24.636Z",
+  "runCount": 25,
+  "lastTitle": "ప్రయత్నం విలువ",
+  "lastDate": "2026-08-25T04:50:14.977Z",
   "used": [
     {
       "title": "చిన్న ప్రయత్నం, పెద్ద ఫలం",
@@ -88,6 +88,11 @@
       "title": "నమ్మకం విలువ",
       "screen": "నిన్ను నువ్వు నమ్మడం అంటే ప్రతి సమస్య సులభమవుతుందని కాదు, కానీ ప్రతి సమస్యను ఎదుర్కొనే ధైర్యం నీలో పెరుగుతుందని అర్థం.",
       "image": "confident solitary figure overlooking a vast valley at sunrise, subtle warm light, reflective hopeful mood, cinematic vertical photography"
+    },
+    {
+      "title": "ప్రయత్నం విలువ",
+      "screen": "ప్రతి ప్రయత్నం వెంటనే ఫలితం ఇవ్వకపోవచ్చు, కానీ ప్రతి ప్రయత్నం మనలో ఒక కొత్త అనుభవాన్ని పెంచుతుంది, అదే అనుభవం తరువాతి అడుగును బలంగా చేస్తుంది.",
+      "image": "person climbing a long stone staircase toward sunrise, gradual progress, cinematic vertical photography"
     }
   ]
 }
