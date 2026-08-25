@@ -91,11 +91,15 @@ async function groq(prompt,model=PRIMARY_MODEL,attempt=1){
 }
 function parse(raw){
   const title=raw.match(/TITLE:\s*(.+)/i)?.[1]?.trim()||'తెలుగు జీవిత సత్యం';
-  const screen=(raw.match(/SCREEN:\s*([\s\S]*?)(?=\nHOOK:|\nMOOD:|\nIMAGE_PROMPT:|$)/i)?.[1]||'').replace(/["“”]/g,'').replace(/\s+/g,' ').trim();
+  const screenRaw=(raw.match(/SCREEN:\s*([\s\S]*?)(?=\nHOOK:|\nMOOD:|\nIMAGE_PROMPT:|$)/i)?.[1]||'').replace(/["“”]/g,'').replace(/\s+/g,' ').trim();
+  // The model wraps the one key/important word per clause in *asterisks* so the renderer knows which
+  // word to visually highlight, instead of guessing (the old heuristic just picked the longest word).
+  const highlightWords=[...screenRaw.matchAll(/\*([^\s*]+)\*/g)].map(m=>m[1]);
+  const screen=screenRaw.replace(/\*/g,'');
   const hook=(raw.match(/HOOK:\s*([\s\S]*?)(?=\nMOOD:|\nIMAGE_PROMPT:|$)/i)?.[1]||'').replace(/["“”]/g,'').replace(/\s+/g,' ').trim();
   const mood=raw.match(/MOOD:\s*(.+)/i)?.[1]?.trim()||'quiet determination';
   const image=raw.match(/IMAGE_PROMPT:\s*([\s\S]*?)(?=\n$|$)/i)?.[1]?.trim()||'';
-  return {title,screen,hook,mood,image};
+  return {title,screen,hook,mood,image,highlightWords};
 }
 // A single generation call asking the model to "proofread itself" is not reliable enough — it still
 // let a real invented word ("ఎర్పు" for "ఓర్పు") and a case-agreement error through. A separate
@@ -119,7 +123,7 @@ async function makeQuote(){
   const theme=themes[state().runCount%themes.length];
   const prompt=`Create ONE completely original motivational life-wisdom quote for a YouTube Short, in the Telugu language. Theme: ${theme}.
 TITLE: a short, grammatically complete, correctly spelled 2-4 word Telugu phrase that captures the quote's core idea, written entirely in native Telugu script. Double-check the spelling of every word before answering — for example "లక్ష్యం" (goal) must keep its "్యం" ending, do not drop it; and "ఓర్పు" (patience/endurance) must not be corrupted into the meaningless "ఎర్పు".
-SCREEN: exactly 16-36 words, written ENTIRELY in native Telugu script (Unicode Telugu letters). Do NOT use English/Latin letters anywhere in this line, not even for names or filler. No hashtags. Do NOT quote or reference any real person, book, movie, song, scripture, or existing proverb — the thought must be entirely original. Do NOT make factual claims, statistics, or promises about health, money, or results. Natural Telugu, wise, mature, simple and memorable. Do not write a short slogan. Make one flowing thought with 2-3 connected clauses.
+SCREEN: exactly 16-36 words, written ENTIRELY in native Telugu script (Unicode Telugu letters). Do NOT use English/Latin letters anywhere in this line, not even for names or filler. No hashtags. Do NOT quote or reference any real person, book, movie, song, scripture, or existing proverb — the thought must be entirely original. Do NOT make factual claims, statistics, or promises about health, money, or results. Natural Telugu, wise, mature, simple and memorable. Do not write a short slogan. Make one flowing thought with 2-3 connected clauses. Wrap the single most emotionally/semantically important word of each clause in *asterisks* (e.g. "మార్పు రాకుండా *జీవితం* నిలిచిపోతుంది") so it can be visually highlighted — mark only ONE word per clause (roughly 3-4 marked words total across the whole line), never a whole phrase, never a grammatical filler word (postpositions, connectors), only the word that actually carries the meaning.
 HOOK: a short 4-20 word Telugu sentence, entirely in Telugu script, that teases the quote's idea WITHOUT repeating the SCREEN line word-for-word — phrase it as a curiosity-driven question or statement suitable as the opening line of a YouTube description.
 Before finalizing, silently proofread TITLE, SCREEN and HOOK as a strict native Telugu editor would: verify every single word is a real, standard dictionary Telugu word (never a plausible-looking but non-existent or corrupted spelling — a word that is valid Telugu Unicode but does not actually exist in the language is still wrong), check subject-verb agreement, correct case markers (never attach an accusative "-ని/-ను" to a noun governed by an intransitive verb like పూయు/వికసించు/పెరుగు), transitive vs intransitive verb usage, and natural everyday idiom (e.g. prefer "ఎప్పుడైనా చూసారా" over the unnatural "ఎప్పుడూ చూసారా" in a question). Rewrite silently until every line reads completely natural, grammatically flawless Telugu using only real words before answering.
 MOOD: give 2-4 English mood words only.
@@ -169,10 +173,16 @@ function splitChunks(words){
   }
   return chunks;
 }
-// No real NLP tagging available, so the longest word in the chunk is used as a proxy for "the main word".
-function pickHighlightIndex(chunkWords){
+function normalizeWord(w){return String(w||'').replace(/^[,.;:!?"'…]+|[,.;:!?"'…]+$/g,'');}
+// Prefer the word the model itself marked as semantically important (see the *asterisk* instruction
+// in the prompt) — far more accurate than guessing. Only falls back to "longest word in the chunk"
+// when a chunk has no marked word in it (e.g. the model under-marked, or dropped punctuation differs).
+function pickHighlightIndex(chunkWords,highlightWords=[]){
+  const marked=new Set(highlightWords.map(normalizeWord));
+  const matchIdx=chunkWords.findIndex(w=>marked.has(normalizeWord(w)));
+  if(matchIdx>=0)return matchIdx;
   let idx=0,maxLen=0;
-  chunkWords.forEach((w,i)=>{const len=[...w].length;if(len>maxLen){maxLen=len;idx=i;}});
+  chunkWords.forEach((w,i)=>{const len=[...normalizeWord(w)].length;if(len>maxLen){maxLen=len;idx=i;}});
   return idx;
 }
 // Segments by grapheme cluster (not JS string index) so a Telugu conjunct/matra is always revealed as
@@ -205,7 +215,7 @@ function chunkHtmlPage(inner){
 // held frame for the rest of CHUNK_HOLD_SECONDS, then hard-cuts to the next chunk — a fast, high-energy
 // style instead of one line slowly accumulating the whole quote. Total video length is now however long
 // the chunk timeline actually runs, not a fixed constant.
-async function renderChunkSequence(quote){
+async function renderChunkSequence(quote,highlightWords=[]){
   if(!CHROME_PATH) throw new Error('No Chrome/Chromium binary found to render Telugu text');
   fs.rmSync(FRAMES_DIR,{recursive:true,force:true});
   fs.mkdirSync(FRAMES_DIR,{recursive:true});
@@ -219,7 +229,7 @@ async function renderChunkSequence(quote){
       const chunkWords=chunks[ci];
       const wordGraphemes=chunkWords.map(w=>graphemes(w));
       const totalGraphemes=wordGraphemes.reduce((s,g)=>s+g.length,0);
-      const highlightIdx=pickHighlightIndex(chunkWords);
+      const highlightIdx=pickHighlightIndex(chunkWords,highlightWords);
       const maxSteps=Math.max(1,Math.floor(TYPE_BUDGET_SECONDS/TYPE_STEP_SECONDS));
       const stride=Math.max(1,Math.ceil(totalGraphemes/maxSteps));
       const revealCounts=[];
@@ -252,9 +262,9 @@ async function renderChunkSequence(quote){
   const totalSeconds=timeline.reduce((s,f)=>s+f.duration,0);
   return {listFile,totalSeconds};
 }
-async function render(image,quote){
+async function render(image,quote,highlightWords=[]){
   const out=path.join(WORK_DIR,'output.mp4');
-  const {listFile,totalSeconds}=await renderChunkSequence(quote);
+  const {listFile,totalSeconds}=await renderChunkSequence(quote,highlightWords);
   const frameCount=Math.round(totalSeconds*25);
   // zoompan increment reaches the 1.08 cap exactly on the last frame instead of plateauing early, same
   // fix as before, just recomputed against the now-variable video length.
@@ -287,9 +297,9 @@ async function main(){
   for(const [n,v] of Object.entries({GROQ_API_KEY,YT_CLIENT_ID,YT_CLIENT_SECRET,YT_REFRESH_TOKEN}))if(!v)throw new Error(`${n} is missing`);
   if(!fs.existsSync(BGM_FILE))throw new Error(`Bundled BGM file missing: ${BGM_FILE}`);
   log('Run: quote (Telugu script) + ONE full-screen matching image + fixed channel BGM. NO VOICE. Uploads PRIVATE for review.');
-  const q=await makeQuote();log(`SCREEN (${countWords(q.screen)} words): ${q.screen}`);log(`HOOK: ${q.hook}`);log(`IMAGE: ${q.image}`);
+  const q=await makeQuote();log(`SCREEN (${countWords(q.screen)} words): ${q.screen}`);log(`HOOK: ${q.hook}`);log(`IMAGE: ${q.image}`);log(`HIGHLIGHT WORDS: ${(q.highlightWords||[]).join(', ')||'(none marked, using longest-word fallback)'}`);
   const image=await makeImage(q.image);
-  const video=await render(image,q.screen);
+  const video=await render(image,q.screen,q.highlightWords);
   const titleWithEmoji=`${pickEmoji(q.mood)} ${q.title}`;
   await upload(video,titleWithEmoji,q.hook);
   saveState(q.title,q.screen,q.image);
