@@ -1,7 +1,7 @@
 {
-  "runCount": 17,
-  "lastTitle": "కొత్త పాఠం",
-  "lastDate": "2026-08-25T01:34:54.878Z",
+  "runCount": 18,
+  "lastTitle": "లక్ష్యపు ప్రయాణం",
+  "lastDate": "2026-08-25T01:57:11.330Z",
   "used": [
     {
       "title": "చిన్న ప్రయత్నం, పెద్ద ఫలం",
@@ -53,6 +53,11 @@
       "title": "కొత్త పాఠం",
       "screen": "ప్రతి వైఫల్యం వెనుక ఒక కొత్త పాఠం దాగి ఉంటుంది, ఆ పాఠాన్ని అర్థం చేసుకున్న ప్రతి ఒక్కరు మరింత బలంగా మారి ముందుకు సాగిపోతారు",
       "image": "person standing before a cracked open door with warm light spilling through, symbolic of new beginnings after setback, calm hopeful mood, cinematic photography"
+    },
+    {
+      "title": "లక్ష్యపు ప్రయాణం",
+      "screen": "చిన్న చిన్న అడుగులతోనే మన కలల పర్వతాన్ని ఎక్కడం ప్రారంభిస్తాం..., ప్రతి శ్రమ మనకు కొత్త బలము ఇస్తుంది, అది మన లక్ష్యాన్ని చేరడానికి మార్గం చూపుతుంది.",
+      "image": "A lone figure ascending a misty mountain ridge at sunrise, camera in low angle to emphasize the rising sun's golden light filtering through clouds, creating a quiet, hopeful atmosphere that evokes steadfast determination and quiet resilience."
     }
   ]
 }
