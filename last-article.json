@@ -1,7 +1,7 @@
 {
-  "runCount": 31,
-  "lastTitle": "కాలం పాఠం",
-  "lastDate": "2026-08-25T12:23:48.094Z",
+  "runCount": 32,
+  "lastTitle": "అవకాశం తలుపు",
+  "lastDate": "2026-08-25T12:48:21.811Z",
   "used": [
     {
       "title": "చిన్న ప్రయత్నం, పెద్ద ఫలం",
@@ -123,6 +123,11 @@
       "title": "కాలం పాఠం",
       "screen": "కాలం మనకు కొన్ని సమాధానాలు మాటలతో ఇవ్వదు, అనుభవాల ద్వారా చూపిస్తుంది, అర్థం చేసుకున్న కొద్దీ జీవితం మీద మన దృష్టి మరింత స్పష్టమవుతుంది.",
       "image": "old path through trees with morning mist and soft sunlight, cinematic vertical photography"
+    },
+    {
+      "title": "అవకాశం తలుపు",
+      "screen": "రోజూ చిన్న అడుగులు వేస్తూ, మనసులోని బలం ని వెలికితీసి, కలలను వాస్తవంగా మార్చుకోండి. ప్రతి ఉదయం కొత్త ఆశలను కలిగి, అడ్డంకులను దాటి ముందుకు సాగండి.",
+      "image": "A dramatic sunrise over misty mountain ridges, a lone silhouette walking forward, golden light spilling across the path, cinematic wide angle, warm hues, 9:16 aspect ratio."
     }
   ]
 }
