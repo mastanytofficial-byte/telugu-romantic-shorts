@@ -31,12 +31,13 @@ jobs:
         timeout-minutes: 3
         run: |
           sudo apt-get update -o Acquire::Retries=3
-          sudo apt-get install -y --no-install-recommends ffmpeg fonts-noto-extra
+          sudo apt-get install -y --no-install-recommends ffmpeg fonts-noto-extra fonts-noto-color-emoji
 
       - name: Verify ffmpeg, font and Chrome
         run: |
           ffmpeg -version
           test -f /usr/share/fonts/truetype/noto/NotoSansTelugu-SemiBold.ttf
+          test -f /usr/share/fonts/truetype/noto/NotoColorEmoji.ttf
           command -v google-chrome-stable || command -v google-chrome || command -v chromium-browser || command -v chromium
 
       - name: Install dependencies

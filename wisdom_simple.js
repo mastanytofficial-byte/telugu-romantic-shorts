@@ -31,6 +31,10 @@ const TYPE_BUDGET_SECONDS = 0.9; // max time spent typing a chunk before it sett
 const TAIL_PAD_SECONDS = 0.6; // extra hold added after the last chunk so the video doesn't cut off abruptly
 const TELUGU_RANGE = /[ఀ-౿]/;
 const MOOD_EMOJI = [[/determin/i,'💪'],[/resilien/i,'🌊'],[/strength/i,'🔥'],[/hope/i,'🌅'],[/focus/i,'🎯'],[/calm/i,'🍃'],[/growth/i,'🌱'],[/courage|brave/i,'🦁']];
+// Small English keyword + emoji pinned at the top of the frame throughout the video, distinct from the
+// accumulating Telugu quote below it — same mood text driving pickEmoji(), just a second small map.
+const MOOD_TOP_LABEL = [[/trust|betray/i,'MINDSET 🧠'],[/success|hard.?work|effort/i,'LIFE LESSON 💡'],[/time|patience/i,'TRUE WORDS ⏳'],[/silen|matur/i,'SILENT POWER 🤫'],[/money|wealth|relation/i,'REALITY OF LIFE 💯'],[/determin/i,'MINDSET 🧠'],[/resilien|strength/i,'INNER POWER 🔥'],[/hope/i,'NEW BEGINNING 🌅'],[/focus/i,'STAY FOCUSED 🎯'],[/calm/i,'STAY CALM 🍃'],[/growth/i,'KEEP GROWING 🌱'],[/courage|brave/i,'BE BRAVE 🦁']];
+function pickTopLabel(mood){const hit=MOOD_TOP_LABEL.find(([re])=>re.test(mood||''));return hit?hit[1]:'LIFE LESSON 💡';}
 
 const FALLBACKS = [
   { title:'మొదటి అడుగు', screen:'కష్టపడిన ప్రతి క్షణం వృథా కాదు, ఆ కష్టం వెనుక దాగి ఉన్న అనుభవం మనకి కొత్త బలాన్ని ఇస్తూ ముందుకు నడిపిస్తుంది', hook:'ప్రతి కష్టం వెనుక ఏం దాగుందో తెలుసా?', mood:'quiet determination', image:'lone figure taking the first step onto a misty mountain trail at sunrise, soft golden light, quiet determined atmosphere, cinematic photography, vertical composition' },
@@ -119,7 +123,7 @@ ISSUES: a short comma-separated list naming any specific wrong/invented word or 
   return {clean,issues};
 }
 async function makeQuote(){
-  const themes=['kashtapadithe vache phalitham','vairalyam nunchi nerchukovadam','atma vishwasam','sahanam mariyu erpu','lakshyam vaipu prayanam','marpu tho vache kotha balam','chinna prayatnam pedda phalitham','gelupu venuka dagi unna kastam'];
+  const themes=['kashtapadithe vache phalitham','vairalyam nunchi nerchukovadam','atma vishwasam','sahanam mariyu erpu','lakshyam vaipu prayanam','marpu tho vache kotha balam','chinna prayatnam pedda phalitham','gelupu venuka dagi unna kastam','ekkuva nammakam pettukovadam valla vache nastam mariyu nijamaina nammakam ela vundali','kashtala venuka dagi unna nijamaina shakthi parichayam','kalam nerpe pathamlu marevi kavu','nishabdanga shramapadatam, phalitham tanaga matladatam','dabbu mariyu bandhala madhya nijamaina viluva'];
   const theme=themes[state().runCount%themes.length];
   const prompt=`Create ONE completely original motivational life-wisdom quote for a YouTube Short, in the Telugu language. Theme: ${theme}.
 TITLE: a short, grammatically complete, correctly spelled 2-4 word Telugu phrase that captures the quote's core idea, written entirely in native Telugu script. Double-check the spelling of every word before answering — for example "లక్ష్యం" (goal) must keep its "్యం" ending, do not drop it; and "ఓర్పు" (patience/endurance) must not be corrupted into the meaningless "ఎర్పు".
@@ -209,22 +213,24 @@ function chunkFrameInner(wordGraphemes,highlightIdx,revealed,dim=false){
   }
   return parts.join(' ');
 }
-function chunkHtmlPage(inner){
+function chunkHtmlPage(inner,topLabel){
+  const topHtml=topLabel?`<div class="top">${escapeHtml(topLabel)}</div>`:'';
   return `<!doctype html><html><head><meta charset="utf-8"><style>
     @font-face{font-family:'TeluguFont';src:url('file://${TELUGU_FONT}');}
     html,body{margin:0;padding:0;width:1080px;height:1920px;background:transparent;}
     .box{position:absolute;left:40px;top:560px;width:1000px;height:800px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 40px;}
-    .txt{font-family:'TeluguFont',sans-serif;font-size:58px;line-height:1.55;color:#fff;text-align:center;text-shadow:0 0 16px rgba(0,0,0,0.95),0 0 30px rgba(0,0,0,0.85),2px 3px 4px rgba(0,0,0,0.9);width:1000px;}
+    .txt{font-family:'TeluguFont',sans-serif;font-size:58px;line-height:1.55;color:#fff;text-align:center;text-shadow:0 0 16px rgba(0,0,0,0.95),0 0 30px rgba(0,0,0,0.85),2px 3px 4px rgba(0,0,0,0.9);width:1000px;-webkit-text-stroke:2px rgba(0,0,0,0.85);}
     .hi{color:#FFD54A;text-shadow:0 0 18px rgba(255,213,74,0.9),0 0 34px rgba(255,213,74,0.6),2px 3px 4px rgba(0,0,0,0.9);}
     .done{color:#8d96a3;text-shadow:1px 2px 3px rgba(0,0,0,0.7);}
-  </style></head><body><div class="box"><div class="txt">${inner}</div></div></body></html>`;
+    .top{position:absolute;left:0;top:140px;width:1080px;text-align:center;font-family:'TeluguFont',sans-serif;font-size:42px;font-weight:700;letter-spacing:2px;color:#fff;text-shadow:0 0 14px rgba(0,0,0,0.95),2px 3px 4px rgba(0,0,0,0.9);-webkit-text-stroke:1.5px rgba(0,0,0,0.85);}
+  </style></head><body>${topHtml}<div class="box"><div class="txt">${inner}</div></div></body></html>`;
 }
 // Renders each chunk as a typewriter reveal (grapheme by grapheme, frame-aligned) that settles into a
 // held frame for the rest of CHUNK_HOLD_SECONDS, then moves on to the next chunk — but unlike the first
 // version of this, completed chunks stay on screen (accumulating into the full quote, wrapping across
 // lines) instead of being replaced. Total video length is however long the chunk timeline actually
 // runs, not a fixed constant.
-async function renderChunkSequence(quote,highlightWords=[]){
+async function renderChunkSequence(quote,highlightWords=[],topLabel=''){
   if(!CHROME_PATH) throw new Error('No Chrome/Chromium binary found to render Telugu text');
   fs.rmSync(FRAMES_DIR,{recursive:true,force:true});
   fs.mkdirSync(FRAMES_DIR,{recursive:true});
@@ -251,7 +257,7 @@ async function renderChunkSequence(quote,highlightWords=[]){
       for(let si=0;si<revealCounts.length;si++){
         const currentHtml=chunkFrameInner(wordGraphemes,highlightIdx,revealCounts[si]);
         const inner=priorHtml?`${priorHtml} ${currentHtml}`:currentHtml;
-        await page.setContent(chunkHtmlPage(inner),{waitUntil:'load'});
+        await page.setContent(chunkHtmlPage(inner,topLabel),{waitUntil:'load'});
         await page.evaluate(()=>document.fonts.ready);
         const p=path.join(FRAMES_DIR,`c${String(ci).padStart(3,'0')}_${si}.png`);
         await page.screenshot({path:p,omitBackground:true});
@@ -275,9 +281,9 @@ async function renderChunkSequence(quote,highlightWords=[]){
   const totalSeconds=timeline.reduce((s,f)=>s+f.duration,0);
   return {listFile,totalSeconds};
 }
-async function render(image,quote,highlightWords=[]){
+async function render(image,quote,highlightWords=[],topLabel=''){
   const out=path.join(WORK_DIR,'output.mp4');
-  const {listFile,totalSeconds}=await renderChunkSequence(quote,highlightWords);
+  const {listFile,totalSeconds}=await renderChunkSequence(quote,highlightWords,topLabel);
   const frameCount=Math.round(totalSeconds*25);
   // zoompan increment reaches the 1.08 cap exactly on the last frame instead of plateauing early, same
   // fix as before, just recomputed against the now-variable video length.
@@ -310,9 +316,10 @@ async function main(){
   for(const [n,v] of Object.entries({GROQ_API_KEY,YT_CLIENT_ID,YT_CLIENT_SECRET,YT_REFRESH_TOKEN}))if(!v)throw new Error(`${n} is missing`);
   if(!fs.existsSync(BGM_FILE))throw new Error(`Bundled BGM file missing: ${BGM_FILE}`);
   log('Run: quote (Telugu script) + ONE full-screen matching image + fixed channel BGM. NO VOICE. Uploads PRIVATE for review.');
-  const q=await makeQuote();log(`SCREEN (${countWords(q.screen)} words): ${q.screen}`);log(`HOOK: ${q.hook}`);log(`IMAGE: ${q.image}`);log(`HIGHLIGHT WORDS: ${(q.highlightWords||[]).join(', ')||'(none marked, using longest-word fallback)'}`);
+  const q=await makeQuote();log(`SCREEN (${countWords(q.screen)} words): ${q.screen}`);log(`HOOK: ${q.hook}`);log(`IMAGE: ${q.image}`);log(`HIGHLIGHT WORDS: ${(q.highlightWords||[]).join(', ')||'(none marked)'}`);
+  const topLabel=pickTopLabel(q.mood);log(`TOP LABEL: ${topLabel}`);
   const image=await makeImage(q.image);
-  const video=await render(image,q.screen,q.highlightWords);
+  const video=await render(image,q.screen,q.highlightWords,topLabel);
   const titleWithEmoji=`${pickEmoji(q.mood)} ${q.title}`;
   await upload(video,titleWithEmoji,q.hook);
   saveState(q.title,q.screen,q.image);
