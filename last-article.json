@@ -1,7 +1,7 @@
 {
-  "runCount": 18,
-  "lastTitle": "లక్ష్యపు ప్రయాణం",
-  "lastDate": "2026-08-25T01:57:11.330Z",
+  "runCount": 19,
+  "lastTitle": "మార్పు కొత్త శక్తి",
+  "lastDate": "2026-08-25T02:07:43.748Z",
   "used": [
     {
       "title": "చిన్న ప్రయత్నం, పెద్ద ఫలం",
@@ -58,6 +58,11 @@
       "title": "లక్ష్యపు ప్రయాణం",
       "screen": "చిన్న చిన్న అడుగులతోనే మన కలల పర్వతాన్ని ఎక్కడం ప్రారంభిస్తాం..., ప్రతి శ్రమ మనకు కొత్త బలము ఇస్తుంది, అది మన లక్ష్యాన్ని చేరడానికి మార్గం చూపుతుంది.",
       "image": "A lone figure ascending a misty mountain ridge at sunrise, camera in low angle to emphasize the rising sun's golden light filtering through clouds, creating a quiet, hopeful atmosphere that evokes steadfast determination and quiet resilience."
+    },
+    {
+      "title": "మార్పు కొత్త శక్తి",
+      "screen": "మార్పు అనివార్యమైనది... ప్రతి కొత్త సవాలు బలాన్ని పెంచుతుంది, మనసు అంకితభావంతో నవీనంగా వృద్ధి చెందుతుంది, చివరికి జీవితం సమృద్ధి అవుతుంది.",
+      "image": "A lone hiker in mid-ascent on a rugged cliff face at dawn, shoulders squared, face illuminated by golden sunrise, casting long shadows, exuding quiet determination and resilience, cinematic 9:16 vertical frame, high dynamic range, subtle mist, dramatic sky."
     }
   ]
 }
