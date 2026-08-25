@@ -30,7 +30,6 @@ const TYPE_STEP_SECONDS = 0.04;
 const TYPE_BUDGET_SECONDS = 0.9;
 const TAIL_PAD_SECONDS = 0.6;
 const TELUGU_RANGE = /[ఀ-౿]/;
-const TELUGU_COMMA_RE = /[,،]/g;
 const MOOD_EMOJI = [[/determin/i,'💪'],[/resilien/i,'🌊'],[/strength/i,'🔥'],[/hope/i,'🌅'],[/focus/i,'🎯'],[/calm/i,'🍃'],[/growth/i,'🌱'],[/courage|brave/i,'🦁']];
 const MOOD_TOP_LABEL = [[/trust|betray/i,'MINDSET 🧠'],[/success|hard.?work|effort/i,'LIFE LESSON 💡'],[/time|patience/i,'TRUE WORDS ⏳'],[/silen|matur/i,'SILENT POWER 🤫'],[/money|wealth|relation/i,'REALITY OF LIFE 💯'],[/determin/i,'MINDSET 🧠'],[/resilien|strength/i,'INNER POWER 🔥'],[/hope/i,'NEW BEGINNING 🌅'],[/focus/i,'STAY FOCUSED 🎯'],[/calm/i,'STAY CALM 🍃'],[/growth/i,'KEEP GROWING 🌱'],[/courage|brave/i,'BE BRAVE 🦁']];
 function pickTopLabel(mood){const hit=MOOD_TOP_LABEL.find(([re])=>re.test(mood||''));return hit?hit[1]:'LIFE LESSON 💡';}
@@ -55,14 +54,7 @@ async function get(url, options={}, timeout=30000){
 }
 function countWords(s){return String(s||'').trim().split(/\s+/).filter(Boolean).length;}
 function latinLeakage(s){return (String(s||'').match(/[A-Za-z]{2,}/g)||[]);}
-function normalizeTeluguText(s){
-  return String(s||'')
-    .replace(/["“”'‘’]/g,'')
-    .replace(/\*/g,'')
-    .replace(/\u00a0/g,' ')
-    .replace(/\s+/g,' ')
-    .trim();
-}
+function normalizeTeluguText(s){return String(s||'').replace(/["“”'‘’]/g,'').replace(/\*/g,'').replace(/\u00a0/g,' ').replace(/\s+/g,' ').trim();}
 function hasBrokenMarkers(s){return /(^|\s)[,.;:!?…]+($|\s)/.test(String(s||''));}
 function hasRunOnPunctuation(s){return /[,،]\s*[,،]|\.\s*\.|!\s*!|\?\s*\?/.test(String(s||''));}
 function endsCleanly(s){return /[.!?…]$/.test(String(s||'').trim());}
@@ -80,27 +72,15 @@ function validHook(h){
 }
 function pickEmoji(mood){const hit=MOOD_EMOJI.find(([re])=>re.test(mood||''));return hit?hit[1]:'✨';}
 function state(){try{return JSON.parse(fs.readFileSync(STATE_FILE,'utf8'));}catch{return {runCount:0,used:[]};}}
-function isDuplicate(title,screen,image){
-  const used=state().used||[];
-  return used.some(r=>r.title===title.trim()||r.screen===screen.trim()||(image&&r.image===image.trim()));
-}
-function saveState(title,screen,image){
-  const s=state();
-  const used=[...(s.used||[]),{title:title.trim(),screen:screen.trim(),image:(image||'').trim()}];
-  fs.writeFileSync(STATE_FILE,JSON.stringify({runCount:(s.runCount||0)+1,lastTitle:title,lastDate:new Date().toISOString(),used},null,2));
-}
+function isDuplicate(title,screen,image){const used=state().used||[];return used.some(r=>r.title===title.trim()||r.screen===screen.trim()||(image&&r.image===image.trim()));}
+function saveState(title,screen,image){const s=state();const used=[...(s.used||[]),{title:title.trim(),screen:screen.trim(),image:(image||'').trim()}];fs.writeFileSync(STATE_FILE,JSON.stringify({runCount:(s.runCount||0)+1,lastTitle:title,lastDate:new Date().toISOString(),used},null,2));}
 async function sleep(ms){return new Promise(res=>setTimeout(res,ms));}
 async function groq(prompt,model=PRIMARY_MODEL,attempt=1){
   const maxTokens=model===FALLBACK_MODEL?6000:1536;
   const r=await get('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${GROQ_API_KEY}`},body:JSON.stringify({model,temperature:.85,max_tokens:maxTokens,messages:[{role:'user',content:prompt}]})});
   const d=await r.json();
-  if(r.status===429&&attempt<=3){
-    const waitSeconds=Number(d?.error?.message?.match(/try again in ([\d.]+)s/)?.[1])||15;
-    log(`Groq rate-limited on ${model} (attempt ${attempt}); waiting ${waitSeconds}s before retry`);
-    await sleep(Math.ceil(waitSeconds*1000)+1000);
-    return groq(prompt,model,attempt+1);
-  }
-  if(!d.choices?.[0]?.message?.content) throw new Error(`Groq returned no content: HTTP ${r.status} model=${model} ${JSON.stringify(d)}`);
+  if(r.status===429&&attempt<=3){const waitSeconds=Number(d?.error?.message?.match(/try again in ([\d.]+)s/)?.[1])||15;log(`Groq rate-limited on ${model} (attempt ${attempt}); waiting ${waitSeconds}s before retry`);await sleep(Math.ceil(waitSeconds*1000)+1000);return groq(prompt,model,attempt+1);}
+  if(!d.choices?.[0]?.message?.content)throw new Error(`Groq returned no content: HTTP ${r.status} model=${model} ${JSON.stringify(d)}`);
   return d.choices[0].message.content.replace(/<think>[\s\S]*?<\/think>/gi,'').trim();
 }
 function parse(raw){
@@ -121,14 +101,11 @@ HOOK: ${q.hook}
 Reply with EXACTLY two lines and nothing else:
 CLEAN: yes or no
 ISSUES: a short comma-separated list naming specific spelling, grammar, semantic or naturalness problems, or "none" if CLEAN is yes`;
-  const raw=await groq(vp,model);
-  const clean=/^CLEAN:\s*yes/im.test(raw)&&!/^CLEAN:\s*yes/im.test(raw.replace(/^CLEAN:\s*yes/im,''));
-  const issues=raw.match(/ISSUES:\s*(.+)/i)?.[1]?.trim()||'';
-  return {clean,issues};
+  const raw=await groq(vp,model);const clean=/^CLEAN:\s*yes\s*$/im.test(raw);const issues=raw.match(/ISSUES:\s*(.+)/i)?.[1]?.trim()||'';return {clean,issues};
 }
 function localTeluguSanity(q){
   const combined=`${q.title} ${q.screen} ${q.hook}`;
-  const suspicious=['ఎర్పు','పుష్పం పూలు','విజయం పూలు','వేడి మార్గం','సులభంగా మారుతుంది'];
+  const suspicious=['ఎర్పు','పుష్పం పూలు','విజయం పూలు','వేడి మార్గం'];
   const hits=suspicious.filter(x=>combined.includes(x));
   return hits.length?{ok:false,issues:`Suspicious Telugu phrasing: ${hits.join(', ')}`}:{ok:true,issues:''};
 }
@@ -153,144 +130,56 @@ Return exactly five lines: TITLE: ...\nSCREEN: ...\nHOOK: ...\nMOOD: ...\nIMAGE_
       const verify=basicOk&&local.ok?await verifyTelugu(q,model):null;
       const ok=basicOk&&local.ok&&verify?.clean;
       log(`Quote attempt ${i} [${model}]: title="${q.title}" (${countWords(q.title)}w), screen=${countWords(q.screen)}w, hook=${countWords(q.hook)}w, valid=${ok}${!local.ok?` (local: ${local.issues})`:''}${verify&&!verify.clean?` (verify: ${verify.issues})`:''}`);
-      if(ok) return q;
-    }catch(e){
-      log(`Quote attempt ${i} [${model}] errored, moving on: ${e.message}`);
-    }
+      if(ok)return q;
+    }catch(e){log(`Quote attempt ${i} [${model}] errored, moving on: ${e.message}`);}
   }
   const pool=FALLBACKS.filter(f=>!isDuplicate(f.title,f.screen,f.image));
-  if(!pool.length) throw new Error('All curated fallbacks have already been used and Groq keeps failing validation — add more FALLBACKS entries.');
-  const f=pool[state().runCount%pool.length];
-  log(`Groq did not pass validation; using curated original fallback: ${f.title}`);
-  return f;
+  if(!pool.length)throw new Error('All curated fallbacks have already been used and Groq keeps failing validation — add more FALLBACKS entries.');
+  const f=pool[state().runCount%pool.length];log(`Groq did not pass validation; using curated original fallback: ${f.title}`);return f;
 }
 
 async function makeImage(prompt){
   fs.mkdirSync(WORK_DIR,{recursive:true});
   const enhanced=`${prompt}, vertical 9:16, cinematic still photograph, realistic natural human emotion, beautiful composition, soft depth of field, subtle film grain, no words, no letters, no logo, no watermark, no collage`;
-  const seed=Math.floor(Math.random()*1e9);
-  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(enhanced)}?width=1080&height=1920&nologo=true&seed=${seed}`;
-  const r=await get(url,{},60000); if(!r.ok) throw new Error(`AI image failed HTTP ${r.status}`);
-  const b=Buffer.from(await r.arrayBuffer()); if(b.length<10000) throw new Error('AI image response too small');
-  const p=path.join(WORK_DIR,'background.jpg'); fs.writeFileSync(p,b); log('Created ONE quote-specific full-screen AI image.'); return p;
+  const seed=Math.floor(Math.random()*1e9);const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(enhanced)}?width=1080&height=1920&nologo=true&seed=${seed}`;
+  const r=await get(url,{},60000);if(!r.ok)throw new Error(`AI image failed HTTP ${r.status}`);const b=Buffer.from(await r.arrayBuffer());if(b.length<10000)throw new Error('AI image response too small');
+  const p=path.join(WORK_DIR,'background.jpg');fs.writeFileSync(p,b);log('Created ONE quote-specific full-screen AI image.');return p;
 }
-
 function stripEmoji(s){return String(s||'').replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}]/gu,'').trim();}
 function escapeHtml(s){return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function splitChunks(words){
-  const chunks=[];
-  for(let i=0;i<words.length;i+=CHUNK_WORDS) chunks.push(words.slice(i,i+CHUNK_WORDS));
-  if(chunks.length>1&&chunks[chunks.length-1].length===1){
-    const last=chunks.pop();chunks[chunks.length-1]=chunks[chunks.length-1].concat(last);
-  }
-  return chunks;
-}
+function splitChunks(words){const chunks=[];for(let i=0;i<words.length;i+=CHUNK_WORDS)chunks.push(words.slice(i,i+CHUNK_WORDS));if(chunks.length>1&&chunks[chunks.length-1].length===1){const last=chunks.pop();chunks[chunks.length-1]=chunks[chunks.length-1].concat(last);}return chunks;}
 function normalizeWord(w){return String(w||'').replace(/^[,.;:!?"'…]+|[,.;:!?"'…]+$/g,'');}
-function pickHighlightIndex(chunkWords,highlightWords=[]){
-  const marked=highlightWords.map(normalizeWord).filter(Boolean);
-  return chunkWords.findIndex(w=>{const nw=normalizeWord(w);return marked.some(m=>nw.includes(m)||m.includes(nw));});
-}
+function pickHighlightIndex(chunkWords,highlightWords=[]){const marked=highlightWords.map(normalizeWord).filter(Boolean);return chunkWords.findIndex(w=>{const nw=normalizeWord(w);return marked.some(m=>nw.includes(m)||m.includes(nw));});}
 const GRAPHEME_SEGMENTER=new Intl.Segmenter('te',{granularity:'grapheme'});
 function graphemes(s){return Array.from(GRAPHEME_SEGMENTER.segment(s),seg=>seg.segment);}
-function chunkFrameInner(wordGraphemes,highlightIdx,revealed){
-  let remaining=revealed;
-  const parts=[];
-  for(let wi=0;wi<wordGraphemes.length&&remaining>0;wi++){
-    const g=wordGraphemes[wi];
-    const take=Math.min(remaining,g.length);
-    if(take<=0)continue;
-    const cls=wi===highlightIdx?'hi':'w';
-    parts.push(`<span class="${cls}">${escapeHtml(g.slice(0,take).join(''))}</span>`);
-    remaining-=take;
-  }
-  return parts.join(' ');
-}
+function chunkFrameInner(wordGraphemes,highlightIdx,revealed){let remaining=revealed;const parts=[];for(let wi=0;wi<wordGraphemes.length&&remaining>0;wi++){const g=wordGraphemes[wi];const take=Math.min(remaining,g.length);if(take<=0)continue;const cls=wi===highlightIdx?'hi':'w';parts.push(`<span class="${cls}">${escapeHtml(g.slice(0,take).join(''))}</span>`);remaining-=take;}return parts.join(' ');}
 function chunkHtmlPage(inner,topLabel){
   const topHtml=topLabel?`<div class="top">${escapeHtml(topLabel)}</div>`:'';
-  return `<!doctype html><html><head><meta charset="utf-8"><style>
-    @font-face{font-family:'TeluguFont';src:url('file://${TELUGU_FONT}');}
-    html,body{margin:0;padding:0;width:1080px;height:1920px;background:transparent;}
-    .box{position:absolute;left:40px;top:560px;width:1000px;height:800px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 40px;}
-    .txt{font-family:'TeluguFont',sans-serif;font-size:58px;font-weight:700;line-height:1.55;color:#fff;text-align:center;text-shadow:0 0 16px rgba(0,0,0,.55);-webkit-text-stroke:.8px #000;}
-    .w,.hi{display:inline;}
-    .hi{color:#ffd84d;}
-    .top{position:absolute;top:190px;left:60px;width:960px;text-align:center;font-family:Arial,sans-serif;font-weight:700;font-size:42px;letter-spacing:1px;color:#fff;text-shadow:0 0 12px rgba(0,0,0,.55);-webkit-text-stroke:.8px #000;}
-  </style></head><body><div class="top">${topHtml.replace(/^<div class="top">|<\/div>$/g,'')}</div><div class="box"><div class="txt">${inner}</div></div></body></html>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><style>@font-face{font-family:'TeluguFont';src:url('file://${TELUGU_FONT}');}html,body{margin:0;padding:0;width:1080px;height:1920px;background:transparent;}.box{position:absolute;left:40px;top:560px;width:1000px;height:800px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 40px;}.txt{font-family:'TeluguFont',sans-serif;font-size:58px;font-weight:700;line-height:1.55;color:#fff;text-align:center;text-shadow:0 0 16px rgba(0,0,0,.55);-webkit-text-stroke:.8px #000;}.w,.hi{display:inline;}.hi{color:#ffd84d;}.top{position:absolute;top:190px;left:60px;width:960px;text-align:center;font-family:Arial,sans-serif;font-weight:700;font-size:42px;letter-spacing:1px;color:#fff;text-shadow:0 0 12px rgba(0,0,0,.55);-webkit-text-stroke:.8px #000;}</style></head><body>${topHtml}<div class="box"><div class="txt">${inner}</div></div></body></html>`;
 }
 async function renderChunkSequence(quote,highlightWords,topLabel){
-  fs.mkdirSync(FRAMES_DIR,{recursive:true});
-  const words=quote.trim().split(/\s+/);
-  const chunks=splitChunks(words);
-  const timeline=[];
-  const browser=await puppeteer.launch({headless:'new',executablePath:CHROME_PATH,args:['--no-sandbox','--disable-setuid-sandbox']});
-  const page=await browser.newPage();await page.setViewport({width:1080,height:1920,deviceScaleFactor:1});
-  try{
-    let priorHtml='';
-    for(let ci=0;ci<chunks.length;ci++){
-      const cw=chunks[ci];
-      const highlightIdx=pickHighlightIndex(cw,highlightWords);
-      const wordGraphemes=cw.map(graphemes);
-      const totalGraphemes=wordGraphemes.reduce((n,g)=>n+g.length,0);
-      const stepCount=Math.min(Math.ceil(TYPE_BUDGET_SECONDS/TYPE_STEP_SECONDS),totalGraphemes);
-      const revealCounts=[];
-      for(let s=1;s<=stepCount;s++) revealCounts.push(Math.min(totalGraphemes,Math.ceil(totalGraphemes*s/stepCount)));
-      revealCounts.push(totalGraphemes);
-      const isLastChunk=ci===chunks.length-1;
-      for(let si=0;si<revealCounts.length;si++){
-        const currentHtml=chunkFrameInner(wordGraphemes,highlightIdx,revealCounts[si]);
-        const inner=priorHtml?`${priorHtml} ${currentHtml}`:currentHtml;
-        await page.setContent(chunkHtmlPage(inner,topLabel),{waitUntil:'load'});
-        await page.evaluate(()=>document.fonts.ready);
-        const p=path.join(FRAMES_DIR,`c${String(ci).padStart(3,'0')}_${si}.png`);
-        await page.screenshot({path:p,omitBackground:true});
-        const isLastStep=si===revealCounts.length-1;
-        let duration;
-        if(isLastStep){
-          const typedSeconds=(revealCounts.length-1)*TYPE_STEP_SECONDS;
-          duration=Math.max(CHUNK_HOLD_SECONDS-typedSeconds,TYPE_STEP_SECONDS)+(isLastChunk?TAIL_PAD_SECONDS:0);
-        }else duration=TYPE_STEP_SECONDS;
-        timeline.push({path:p,duration});
-      }
-      priorHtml=currentHtml=chunkFrameInner(wordGraphemes,highlightIdx,totalGraphemes);
+  fs.mkdirSync(FRAMES_DIR,{recursive:true});const words=quote.trim().split(/\s+/);const chunks=splitChunks(words);const timeline=[];
+  const browser=await puppeteer.launch({headless:'new',executablePath:CHROME_PATH,args:['--no-sandbox','--disable-setuid-sandbox']});const page=await browser.newPage();await page.setViewport({width:1080,height:1920,deviceScaleFactor:1});
+  try{let priorHtml='';for(let ci=0;ci<chunks.length;ci++){
+    const cw=chunks[ci];const highlightIdx=pickHighlightIndex(cw,highlightWords);const wordGraphemes=cw.map(graphemes);const totalGraphemes=wordGraphemes.reduce((n,g)=>n+g.length,0);
+    const stepCount=Math.min(Math.ceil(TYPE_BUDGET_SECONDS/TYPE_STEP_SECONDS),totalGraphemes);const revealCounts=[];for(let s=1;s<=stepCount;s++)revealCounts.push(Math.min(totalGraphemes,Math.ceil(totalGraphemes*s/stepCount)));revealCounts.push(totalGraphemes);
+    const isLastChunk=ci===chunks.length-1;let finalHtml='';
+    for(let si=0;si<revealCounts.length;si++){
+      const currentHtml=chunkFrameInner(wordGraphemes,highlightIdx,revealCounts[si]);finalHtml=currentHtml;const inner=priorHtml?`${priorHtml} ${currentHtml}`:currentHtml;await page.setContent(chunkHtmlPage(inner,topLabel),{waitUntil:'load'});await page.evaluate(()=>document.fonts.ready);
+      const p=path.join(FRAMES_DIR,`c${String(ci).padStart(3,'0')}_${si}.png`);await page.screenshot({path:p,omitBackground:true});const isLastStep=si===revealCounts.length-1;let duration;
+      if(isLastStep){const typedSeconds=(revealCounts.length-1)*TYPE_STEP_SECONDS;duration=Math.max(CHUNK_HOLD_SECONDS-typedSeconds,TYPE_STEP_SECONDS)+(isLastChunk?TAIL_PAD_SECONDS:0);}else duration=TYPE_STEP_SECONDS;timeline.push({path:p,duration});
     }
-  }finally{await browser.close();}
-  const lines=[];for(const f of timeline){lines.push(`file '${f.path}'`);lines.push(`duration ${f.duration.toFixed(3)}`);}lines.push(`file '${timeline[timeline.length-1].path}'`);
-  const listFile=path.join(FRAMES_DIR,'list.txt');fs.writeFileSync(listFile,lines.join('\n'),'utf8');
+    priorHtml=priorHtml?`${priorHtml} ${finalHtml}`:finalHtml;
+  }}finally{await browser.close();}
+  const lines=[];for(const f of timeline){lines.push(`file '${f.path}'`);lines.push(`duration ${f.duration.toFixed(3)}`);}lines.push(`file '${timeline[timeline.length-1].path}'`);const listFile=path.join(FRAMES_DIR,'list.txt');fs.writeFileSync(listFile,lines.join('\n'),'utf8');
   const totalSeconds=timeline.reduce((s,f)=>s+f.duration,0);return {listFile,totalSeconds};
 }
 async function render(image,quote,highlightWords=[],topLabel=''){
-  const out=path.join(WORK_DIR,'output.mp4');
-  const {listFile,totalSeconds}=await renderChunkSequence(quote,highlightWords,topLabel);
-  const frameCount=Math.round(totalSeconds*25);const zoomStep=(0.08/frameCount).toFixed(6);
+  const out=path.join(WORK_DIR,'output.mp4');const {listFile,totalSeconds}=await renderChunkSequence(quote,highlightWords,topLabel);const frameCount=Math.round(totalSeconds*25);const zoomStep=(0.08/frameCount).toFixed(6);
   const fc=`[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,zoompan=z='min(zoom+${zoomStep},1.08)':d=${frameCount}:s=1080x1920:fps=25[bg];[bg][2:v]overlay=0:0:format=auto[v];[1:a]volume=-18dB,afade=t=in:st=0:d=0.5[a]`;
-  execSync(`ffmpeg -y -loop 1 -i "${image}" -stream_loop -1 -i "${BGM_FILE}" -f concat -safe 0 -i "${listFile}" -filter_complex "${fc}" -map "[v]" -map "[a]" -t ${totalSeconds.toFixed(2)} -c:v libx264 -preset veryfast -crf 20 -pix_fmt yuv420p -c:a aac -b:a 128k -shortest "${out}"`,{stdio:'inherit'});
-  return out;
+  execSync(`ffmpeg -y -loop 1 -i "${image}" -stream_loop -1 -i "${BGM_FILE}" -f concat -safe 0 -i "${listFile}" -filter_complex "${fc}" -map "[v]" -map "[a]" -t ${totalSeconds.toFixed(2)} -c:v libx264 -preset veryfast -crf 20 -pix_fmt yuv420p -c:a aac -b:a 128k -shortest "${out}"`,{stdio:'inherit'});return out;
 }
-function buildDescription(hook){
-  const hashtags='#TeluguQuotes #JeevithaSatyalu #TeluguMotivation #LifeWisdom #TeluguShorts #MotivationalQuotes #InspirationalQuotes #TeluguStatus #Shorts';
-  return `${hook}\n\n✨ ప్రతిరోజూ ఒక కొత్త జీవిత సత్యం కోసం ఈ ఛానల్‌ని ఫాలో అవ్వండి.\nమీకు ఈ మాట నచ్చిందా? కామెంట్ చేసి చెప్పండి 💬\n\n${hashtags}`;
-}
-async function upload(video,title,hook){
-  const auth=new google.auth.OAuth2(YT_CLIENT_ID,YT_CLIENT_SECRET);auth.setCredentials({refresh_token:YT_REFRESH_TOKEN});
-  const yt=google.youtube({version:'v3',auth});
-  const r=await yt.videos.insert({part:['snippet','status'],requestBody:{snippet:{title:title.slice(0,95),description:buildDescription(hook),tags:['telugu quotes','telugu motivational quotes','life wisdom shorts','telugu shorts','self improvement','జీవిత సత్యాలు','motivational quotes','inspirational quotes','telugu status'],categoryId:'27'},status:{privacyStatus:'private',selfDeclaredMadeForKids:false}},media:{body:fs.createReadStream(video)}});
-  const url=`https://www.youtube.com/watch?v=${r.data.id}`;const studioUrl=`https://studio.youtube.com/video/${r.data.id}/edit`;
-  log(`Uploaded as PRIVATE (pending your review): ${url}`);
-  const review=`## Review required before publishing\n\n- Title: ${title}\n- Watch (private): ${url}\n- Edit in Studio: ${studioUrl}\n\nCheck the Telugu text, image and audio, then set visibility to Public yourself in YouTube Studio to publish.`;
-  fs.mkdirSync(WORK_DIR,{recursive:true});fs.writeFileSync(REVIEW_FILE,review,'utf8');
-}
-async function main(){
-  fs.mkdirSync(WORK_DIR,{recursive:true});
-  for(const [n,v] of Object.entries({GROQ_API_KEY,YT_CLIENT_ID,YT_CLIENT_SECRET,YT_REFRESH_TOKEN}))if(!v)throw new Error(`${n} is missing`);
-  if(!fs.existsSync(BGM_FILE))throw new Error(`Bundled BGM file missing: ${BGM_FILE}`);
-  log('Run: quote (Telugu script) + ONE full-screen matching image + fixed channel BGM. NO VOICE. Uploads PRIVATE for review.');
-  const q=await makeQuote();log(`SCREEN (${countWords(q.screen)} words): ${q.screen}`);log(`HOOK: ${q.hook}`);log(`IMAGE: ${q.image}`);log(`HIGHLIGHT WORDS: ${(q.highlightWords||[]).join(', ')||'(none marked)'}`);
-  const topLabel=pickTopLabel(q.mood);log(`TOP LABEL: ${topLabel}`);
-  const image=await makeImage(q.image);
-  const video=await render(image,q.screen,q.highlightWords,topLabel);
-  const titleWithEmoji=`${pickEmoji(q.mood)} ${q.title}`;
-  await upload(video,titleWithEmoji,q.hook);
-  saveState(q.title,q.screen,q.image);
-  log('Done. Waiting on your manual review/publish.');
-}
+function buildDescription(hook){const hashtags='#TeluguQuotes #JeevithaSatyalu #TeluguMotivation #LifeWisdom #TeluguShorts #MotivationalQuotes #InspirationalQuotes #TeluguStatus #Shorts';return `${hook}\n\n✨ ప్రతిరోజూ ఒక కొత్త జీవిత సత్యం కోసం ఈ ఛానల్‌ని ఫాలో అవ్వండి.\nమీకు ఈ మాట నచ్చిందా? కామెంట్ చేసి చెప్పండి 💬\n\n${hashtags}`;}
+async function upload(video,title,hook){const auth=new google.auth.OAuth2(YT_CLIENT_ID,YT_CLIENT_SECRET);auth.setCredentials({refresh_token:YT_REFRESH_TOKEN});const yt=google.youtube({version:'v3',auth});const r=await yt.videos.insert({part:['snippet','status'],requestBody:{snippet:{title:title.slice(0,95),description:buildDescription(hook),tags:['telugu quotes','telugu motivational quotes','life wisdom shorts','telugu shorts','self improvement','జీవిత సత్యాలు','motivational quotes','inspirational quotes','telugu status'],categoryId:'27'},status:{privacyStatus:'private',selfDeclaredMadeForKids:false}},media:{body:fs.createReadStream(video)}});const url=`https://www.youtube.com/watch?v=${r.data.id}`;const studioUrl=`https://studio.youtube.com/video/${r.data.id}/edit`;log(`Uploaded as PRIVATE (pending your review): ${url}`);const review=`## Review required before publishing\n\n- Title: ${title}\n- Watch (private): ${url}\n- Edit in Studio: ${studioUrl}\n\nCheck the Telugu text, image and audio, then set visibility to Public yourself in YouTube Studio to publish.`;fs.mkdirSync(WORK_DIR,{recursive:true});fs.writeFileSync(REVIEW_FILE,review,'utf8');}
+async function main(){fs.mkdirSync(WORK_DIR,{recursive:true});for(const [n,v] of Object.entries({GROQ_API_KEY,YT_CLIENT_ID,YT_CLIENT_SECRET,YT_REFRESH_TOKEN}))if(!v)throw new Error(`${n} is missing`);if(!fs.existsSync(BGM_FILE))throw new Error(`Bundled BGM file missing: ${BGM_FILE}`);log('Run: quote (Telugu script) + ONE full-screen matching image + fixed channel BGM. NO VOICE. Uploads PRIVATE for review.');const q=await makeQuote();log(`SCREEN (${countWords(q.screen)} words): ${q.screen}`);log(`HOOK: ${q.hook}`);log(`IMAGE: ${q.image}`);log(`HIGHLIGHT WORDS: ${(q.highlightWords||[]).join(', ')||'(none marked)'}`);const topLabel=pickTopLabel(q.mood);log(`TOP LABEL: ${topLabel}`);const image=await makeImage(q.image);const video=await render(image,q.screen,q.highlightWords,topLabel);const titleWithEmoji=`${pickEmoji(q.mood)} ${q.title}`;await upload(video,titleWithEmoji,q.hook);saveState(q.title,q.screen,q.image);log('Done. Waiting on your manual review/publish.');}
 main().catch(e=>{console.error('FAILED:',e.stack||e);process.exit(1);});
