@@ -43,108 +43,73 @@ const FALLBACKS = [
   { title:'నిశ్శబ్ద శ్రమ', screen:'నిశ్శబ్దంగా చేసే శ్రమకు వెంటనే గుర్తింపు రావకపోవచ్చు, కానీ ప్రతి రోజు చేసిన ప్రయత్నం లోపల బలాన్ని పెంచుతుంది, ఒక రోజు ఫలితం తానే మాట్లాడుతుంది.', highlightWords:['శ్రమ'], hook:'ఎవరూ చూడని శ్రమకు నిజమైన విలువ ఉంటుందా?', mood:'quiet determination', image:'solitary person working alone before dawn in a simple workshop, soft window light, calm focused atmosphere, cinematic vertical photography' },
   { title:'మార్పు బలం', screen:'మార్పు మొదట భయంగా అనిపించవచ్చు, కానీ దాన్ని స్వీకరించినప్పుడు మనలో కొత్త బలం మేల్కొంటుంది, అదే బలం ముందున్న దారిని సులభం చేస్తుంది.', highlightWords:['బలం'], hook:'మార్పు మనలో దాచిన ఏ బలాన్ని బయటకు తెస్తుందో తెలుసా?', mood:'new beginning', image:'person stepping from a shadowed doorway into warm morning light, symbolic transition and inner strength, cinematic vertical photography' },
   { title:'నమ్మకం విలువ', screen:'నిన్ను నువ్వు నమ్మడం అంటే ప్రతి సమస్య సులభమవుతుందని కాదు, కానీ ప్రతి సమస్యను ఎదుర్కొనే ధైర్యం నీలో పెరుగుతుందని అర్థం.', highlightWords:['నమ్మడం'], hook:'మనల్ని మనం నమ్మడం ఎందుకు అంత ముఖ్యమో తెలుసా?', mood:'inner strength', image:'confident solitary figure overlooking a vast valley at sunrise, subtle warm light, reflective hopeful mood, cinematic vertical photography' },
-  { title:'కాలం పాఠం', screen:'కాలం మనకు కొన్ని సమాధానాలు మాటలతో ఇవ్వదు, అనుభవాల ద్వారా చూపిస్తుంది, అర్థం చేసుకున్న కొద్దీ జీవితం మీద మన దృష్టి మరింత స్పష్టమవుతుంది.', highlightWords:['అనుభవాల'], hook:'కాలం మాటలు లేకుండా నేర్పే పాఠాలు ఏమిటో గమనించారా?', mood:'quiet wisdom', image:'old path through trees with morning mist and soft sunlight, contemplative atmosphere, symbolic of time and learning, cinematic vertical photography' },
-  { title:'కష్టంలో అవకాశం', screen:'కష్టం వచ్చినప్పుడు దారి మూసుకుపోయిందని అనిపించవచ్చు, కానీ అదే పరిస్థితి మనలో దాగి ఉన్న సామర్థ్యాన్ని బయటకు తెచ్చే అవకాశంగా మారుతుంది.', highlightWords:['సామర్థ్యాన్ని'], hook:'కష్టమే మనలో దాగిన ఏ శక్తిని బయటకు తెస్తుందో తెలుసా?', mood:'resilient strength', image:'person standing before a steep mountain trail after rain, sunlight breaking through clouds, determined hopeful cinematic vertical scene' }
+  { title:'కాలం పాఠం', screen:'కాలం మనకు కొన్ని సమాధానాలు మాటలతో ఇవ్వదు, అనుభవాల ద్వారా చూపిస్తుంది, అర్థం చేసుకున్న కొద్దీ జీవితం గురించి మన అవగాహన మరింత లోతుగా మారుతుంది.', highlightWords:['అనుభవాల'], hook:'కాలం చెప్పే పాఠాలు మాటలకంటే ఎందుకు బలంగా ఉంటాయో తెలుసా?', mood:'quiet wisdom', image:'an old pathway through trees with morning light filtering through, reflective timeless atmosphere, cinematic 9:16 photography' },
+  { title:'ఓర్పు ఫలితం', screen:'ఓర్పుతో వేసిన అడుగులు నెమ్మదిగా అనిపించినా, అవే మనల్ని స్థిరమైన మార్గంలో ముందుకు తీసుకెళ్తాయి, సరైన సమయం వచ్చినప్పుడు వాటి విలువ తెలుస్తుంది.', highlightWords:['ఓర్పుతో'], hook:'నెమ్మదిగా సాగిన ప్రయాణం ఎందుకు విలువైనదో తెలుసా?', mood:'patient growth', image:'small plant growing beside a quiet stone path at sunrise, gentle hopeful light, cinematic vertical photography' },
+  { title:'నిజమైన బలం', screen:'నిజమైన బలం ఎప్పుడూ గట్టిగా కనిపించదు, కొన్ని సార్లు అది మౌనంగా నిలబడి, కష్టమైన సమయంలో సరైన నిర్ణయం తీసుకునే ధైర్యంగా బయటపడుతుంది.', highlightWords:['బలం'], hook:'నిజమైన బలం ఎప్పుడు బయటపడుతుందో ఎప్పుడైనా గమనించారా?', mood:'calm strength', image:'solitary person standing calm in light rain beneath a clearing sky, quiet courage, cinematic vertical photography' },
+  { title:'ప్రయత్నం విలువ', screen:'ప్రతి ప్రయత్నం వెంటనే ఫలితం ఇవ్వకపోవచ్చు, కానీ ప్రతి ప్రయత్నం మనలో ఒక కొత్త అనుభవాన్ని పెంచుతుంది, అదే అనుభవం తరువాతి అడుగును బలంగా చేస్తుంది.', highlightWords:['అనుభవాన్ని'], hook:'ఫలితం రాకపోయినా ప్రయత్నం ఎందుకు వృథా కాదో తెలుసా?', mood:'steady perseverance', image:'person climbing a long stone staircase toward sunrise, gradual progress, cinematic vertical photography' },
+  { title:'సరైన దారి', screen:'దారి కష్టంగా ఉందని అది తప్పు దారి అని కాదు, కొన్ని ప్రయాణాలు మనల్ని పరీక్షించిన తర్వాతే సరైన గమ్యాన్ని చూపిస్తాయి, అందుకే ముందుకు సాగాలి.', highlightWords:['గమ్యాన్ని'], hook:'కఠినమైన దారి కూడా సరైనదై ఉండగలదా?', mood:'determined hope', image:'winding mountain trail through mist toward a bright horizon, cinematic vertical photography' },
+  { title:'మనసు మార్పు', screen:'బయట పరిస్థితులు వెంటనే మారకపోయినా, వాటిని చూసే మన దృష్టి మారితే ప్రతి కష్టం ఒక కొత్త పాఠంగా కనిపిస్తుంది, ప్రతి రోజు కొత్త అవకాశం అవుతుంది.', highlightWords:['దృష్టి'], hook:'పరిస్థితులు మారకపోయినా జీవితం ఎలా మారుతుందో తెలుసా?', mood:'reflective growth', image:'person looking through a window at sunrise after rain, reflective hopeful mood, cinematic vertical photography' },
 ];
 
 function log(x){ console.log(`[${new Date().toISOString()}] ${x}`); }
-async function get(url, options={}, timeout=30000){
-  const c=new AbortController(); const t=setTimeout(()=>c.abort(),timeout);
-  try{return await fetch(url,{...options,signal:c.signal});}finally{clearTimeout(t);}
-}
+async function get(url, options={}, timeout=30000){const c=new AbortController();const t=setTimeout(()=>c.abort(),timeout);try{return await fetch(url,{...options,signal:c.signal});}finally{clearTimeout(t);}}
 function countWords(s){return String(s||'').trim().split(/\s+/).filter(Boolean).length;}
-function latinLeakage(s){return (String(s||'').match(/[A-Za-z]{2,}/g)||[]);}
-function normalizeTeluguText(s){return String(s||'').replace(/["“”'‘’]/g,'').replace(/\*/g,'').replace(/\u00a0/g,' ').replace(/\s+/g,' ').trim();}
-function hasBrokenMarkers(s){return /(^|\s)[,.;:!?…]+($|\s)/.test(String(s||''));}
-function hasRunOnPunctuation(s){return /[,،]\s*[,،]|\.\s*\.|!\s*!|\?\s*\?/.test(String(s||''));}
-function endsCleanly(s){return /[.!?…]$/.test(String(s||'').trim());}
+function latinLeakage(s){return String(s||'').match(/[A-Za-z]{2,}/g)||[];}
+function normalizeTeluguText(s){return String(s||'').replace(/[“”"']/g,'').replace(/[ ]+/g,' ').replace(/[，]/g,',').replace(/[。]/g,'.').trim();}
+function hasBrokenMarkers(s){return /\*|\/|\\|_{2,}|-{3,}/.test(String(s||''));}
+function hasRunOnPunctuation(s){return /[,:;!?…]{2,}/.test(String(s||''))||/\s[,.;!?]/.test(String(s||''));}
+function hasAwkwardStructure(s){
+  const t=normalizeTeluguText(s);
+  const bad=[
+    'మొదటి భయంగా','బలం ముందు నడిపి','మనసు బలం పరీక్షించే','విజయం పూలు','వేడి మార్గం','ఎప్పుడూ చూసారా','కరుణా చూపు','బలము ఇస్తుంది','కొత్త దారిని చూపిస్తూ ఉంటుంది','దారి సులభం చేస్తుంది'
+  ];
+  return bad.filter(x=>t.includes(x));
+}
 function validQuote(s){
-  const n=countWords(s), leaked=latinLeakage(s), t=normalizeTeluguText(s);
-  return n>=MIN_WORDS&&n<=MAX_WORDS&&leaked.length===0&&!/#/.test(s)&&TELUGU_RANGE.test(s)&&!hasBrokenMarkers(t)&&!hasRunOnPunctuation(t)&&endsCleanly(t);
+  const clean=normalizeTeluguText(s),n=countWords(clean),leaked=latinLeakage(clean),bad=hasAwkwardStructure(clean);
+  const sentences=clean.split(/[.!?]+/).filter(Boolean);
+  return n>=MIN_WORDS&&n<=MAX_WORDS&&leaked.length===0&&!/#/.test(clean)&&TELUGU_RANGE.test(clean)&&!hasBrokenMarkers(clean)&&!hasRunOnPunctuation(clean)&&/[.!?…]$/.test(clean)&&sentences.length>=1&&bad.length===0;
 }
 function validTitle(t){
-  const n=countWords(t), leaked=latinLeakage(t), clean=normalizeTeluguText(t);
-  return n>=TITLE_MIN_WORDS&&n<=TITLE_MAX_WORDS&&leaked.length===0&&!/#/.test(t)&&TELUGU_RANGE.test(t)&&clean.length<=60&&!/[.!?]$/.test(clean);
+  const clean=normalizeTeluguText(t),n=countWords(clean),leaked=latinLeakage(clean),bad=hasAwkwardStructure(clean);
+  return n>=TITLE_MIN_WORDS&&n<=TITLE_MAX_WORDS&&leaked.length===0&&!/#/.test(clean)&&TELUGU_RANGE.test(clean)&&String(clean).length<=60&&!hasBrokenMarkers(clean)&&bad.length===0;
 }
 function validHook(h){
-  const n=countWords(h), leaked=latinLeakage(h), clean=normalizeTeluguText(h);
-  return n>=HOOK_MIN_WORDS&&n<=HOOK_MAX_WORDS&&leaked.length===0&&!/#/.test(h)&&TELUGU_RANGE.test(h)&&!hasBrokenMarkers(clean)&&!hasRunOnPunctuation(clean)&&(/[!?]$/.test(clean));
+  const clean=normalizeTeluguText(h),n=countWords(clean),leaked=latinLeakage(clean),bad=hasAwkwardStructure(clean);
+  return n>=HOOK_MIN_WORDS&&n<=HOOK_MAX_WORDS&&leaked.length===0&&!/#/.test(clean)&&TELUGU_RANGE.test(clean)&&!hasBrokenMarkers(clean)&&!hasRunOnPunctuation(clean)&&/[!?]$/.test(clean)&&bad.length===0;
 }
 function pickEmoji(mood){const hit=MOOD_EMOJI.find(([re])=>re.test(mood||''));return hit?hit[1]:'✨';}
 function state(){try{return JSON.parse(fs.readFileSync(STATE_FILE,'utf8'));}catch{return {runCount:0,used:[]};}}
 function isDuplicate(title,screen,image){const used=state().used||[];return used.some(r=>r.title===title.trim()||r.screen===screen.trim()||(image&&r.image===image.trim()));}
 function saveState(title,screen,image){const s=state();const used=[...(s.used||[]),{title:title.trim(),screen:screen.trim(),image:(image||'').trim()}];fs.writeFileSync(STATE_FILE,JSON.stringify({runCount:(s.runCount||0)+1,lastTitle:title,lastDate:new Date().toISOString(),used},null,2));}
 async function sleep(ms){return new Promise(res=>setTimeout(res,ms));}
-async function groq(prompt,model=PRIMARY_MODEL,attempt=1){
-  const maxTokens=model===FALLBACK_MODEL?6000:1536;
-  const r=await get('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${GROQ_API_KEY}`},body:JSON.stringify({model,temperature:.85,max_tokens:maxTokens,messages:[{role:'user',content:prompt}]})});
-  const d=await r.json();
-  if(r.status===429&&attempt<=3){const waitSeconds=Number(d?.error?.message?.match(/try again in ([\d.]+)s/)?.[1])||15;log(`Groq rate-limited on ${model} (attempt ${attempt}); waiting ${waitSeconds}s before retry`);await sleep(Math.ceil(waitSeconds*1000)+1000);return groq(prompt,model,attempt+1);}
-  if(!d.choices?.[0]?.message?.content)throw new Error(`Groq returned no content: HTTP ${r.status} model=${model} ${JSON.stringify(d)}`);
-  return d.choices[0].message.content.replace(/<think>[\s\S]*?<\/think>/gi,'').trim();
-}
-function parse(raw){
-  const title=raw.match(/TITLE:\s*(.+)/i)?.[1]?.trim()||'తెలుగు జీవిత సత్యం';
-  const screenRaw=(raw.match(/SCREEN:\s*([\s\S]*?)(?=\nHOOK:|\nMOOD:|\nIMAGE_PROMPT:|$)/i)?.[1]||'').replace(/["“”]/g,'').replace(/\s+/g,' ').trim();
-  const highlightWords=[...screenRaw.matchAll(/\*([^\s*]+)\*/g)].map(m=>m[1]);
-  const screen=screenRaw.replace(/\*/g,'');
-  const hook=(raw.match(/HOOK:\s*([\s\S]*?)(?=\nMOOD:|\nIMAGE_PROMPT:|$)/i)?.[1]||'').replace(/["“”]/g,'').replace(/\s+/g,' ').trim();
-  const mood=raw.match(/MOOD:\s*(.+)/i)?.[1]?.trim()||'quiet determination';
-  const image=raw.match(/IMAGE_PROMPT:\s*([\s\S]*?)(?=\n$|$)/i)?.[1]?.trim()||'';
-  return {title,screen,hook,mood,image,highlightWords};
-}
-async function verifyTelugu(q,model=PRIMARY_MODEL){
-  const vp=`You are a strict native Telugu proofreader reviewing text someone else wrote. Check the three lines below WORD BY WORD. For each: (1) is every single word a real, standard Telugu word, not invented, misspelled or corrupted; (2) is the grammar completely natural; (3) do adjective-noun and noun-noun pairings make semantic sense; (4) are case markers and verb forms correct; (5) does the wording sound like natural modern Telugu rather than translated Telugu; (6) is the thought original and not a quotation, proverb or cliche. Be especially strict about words that look plausible but do not actually exist.
+async function groq(prompt,model=PRIMARY_MODEL,attempt=1){const maxTokens=model===FALLBACK_MODEL?6000:1536;const r=await get('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${GROQ_API_KEY}`},body:JSON.stringify({model,temperature:.72,max_tokens:maxTokens,messages:[{role:'user',content:prompt}]})});const d=await r.json();if(r.status===429&&attempt<=3){const waitSeconds=Number(d?.error?.message?.match(/try again in ([\d.]+)s/)?.[1])||15;log(`Groq rate-limited on ${model} (attempt ${attempt}); waiting ${waitSeconds}s before retry`);await sleep(Math.ceil(waitSeconds*1000)+1000);return groq(prompt,model,attempt+1);}if(!d.choices?.[0]?.message?.content)throw new Error(`Groq returned no content: HTTP ${r.status} model=${model} ${JSON.stringify(d)}`);return d.choices[0].message.content.replace(/<think>[\s\S]*?<\/think>/gi,'').trim();}
+function parse(raw){const title=raw.match(/TITLE:\s*(.+)/i)?.[1]?.trim()||'తెలుగు జీవిత సత్యం';const screenRaw=(raw.match(/SCREEN:\s*([\s\S]*?)(?=\nHOOK:|\nMOOD:|\nIMAGE_PROMPT:|$)/i)?.[1]||'').replace(/["“”]/g,'').replace(/\s+/g,' ').trim();const highlightWords=[...screenRaw.matchAll(/\*([^\s*]+)\*/g)].map(m=>m[1]);const screen=screenRaw.replace(/\*/g,'');const hook=(raw.match(/HOOK:\s*([\s\S]*?)(?=\nMOOD:|\nIMAGE_PROMPT:|$)/i)?.[1]||'').replace(/["“”]/g,'').replace(/\s+/g,' ').trim();const mood=raw.match(/MOOD:\s*(.+)/i)?.[1]?.trim()||'quiet determination';const image=raw.match(/IMAGE_PROMPT:\s*([\s\S]*?)(?=\n$|$)/i)?.[1]?.trim()||'';return {title,screen,hook,mood,image,highlightWords};}
+async function verifyTelugu(q,model=PRIMARY_MODEL){const vp=`You are the final publication gate for a Telugu YouTube Shorts channel. Review the candidate TITLE, SCREEN and HOOK as if you are a strict native Telugu editor. Reject anything that is merely understandable but unnatural. Every phrase must sound like something a thoughtful Telugu speaker would actually say, not a word-for-word English translation.
+Check: real standard Telugu words; spelling; case suffixes; verb transitivity and agreement; natural clause order; semantic compatibility of adjective+noun and noun+noun pairs; correct genitive forms; punctuation; repetition; clichés; awkward literal translations; missing connective words; unnatural question forms; and overall readability when shown on screen. Prefer simple, contemporary Telugu over literary or translated phrasing. A sentence that is technically grammatical but sounds awkward must be rejected.
+Do not "approve with minor issues". If any single material awkward phrase exists, CLEAN must be no.
 TITLE: ${q.title}
 SCREEN: ${q.screen}
 HOOK: ${q.hook}
 Reply with EXACTLY two lines and nothing else:
 CLEAN: yes or no
-ISSUES: a short comma-separated list naming specific spelling, grammar, semantic or naturalness problems, or "none" if CLEAN is yes`;
-  const raw=await groq(vp,model);const clean=/^CLEAN:\s*yes\s*$/im.test(raw);const issues=raw.match(/ISSUES:\s*(.+)/i)?.[1]?.trim()||'';return {clean,issues};
-}
-function localTeluguSanity(q){
-  const combined=`${q.title} ${q.screen} ${q.hook}`;
-  const suspicious=['ఎర్పు','పుష్పం పూలు','విజయం పూలు','వేడి మార్గం'];
-  const hits=suspicious.filter(x=>combined.includes(x));
-  return hits.length?{ok:false,issues:`Suspicious Telugu phrasing: ${hits.join(', ')}`}:{ok:true,issues:''};
-}
-async function makeQuote(){
-  const themes=['కష్టపడితే వచ్చే ఫలితం','వైఫల్యం నుంచి నేర్చుకోవడం','ఆత్మవిశ్వాసం','సహనం మరియు ఓర్పు','లక్ష్యం వైపు ప్రయాణం','మార్పుతో వచ్చే కొత్త బలం','చిన్న ప్రయత్నం పెద్ద ఫలితం','గెలుపు వెనుక దాగి ఉన్న కష్టం','ఎక్కువ నమ్మకం పెట్టుకోవడం వల్ల వచ్చే నష్టం మరియు నిజమైన నమ్మకం ఎలా ఉండాలి','కష్టాల వెనుక దాగి ఉన్న నిజమైన శక్తి','కాలం నేర్పే పాఠాలు','నిశ్శబ్దంగా శ్రమపడటం, ఫలితం తనంతట తానే మాట్లాడటం','డబ్బు మరియు బంధాల మధ్య నిజమైన విలువ'];
-  const theme=themes[state().runCount%themes.length];
-  const prompt=`Create ONE completely original motivational life-wisdom quote for a YouTube Short, in native Telugu. Theme: ${theme}.
-TITLE: 2-4 word Telugu phrase, grammatically complete, standard spelling, entirely Telugu script.
-SCREEN: exactly 16-36 words, entirely native Telugu script, natural modern Telugu, wise, mature, simple and memorable. Do not write a slogan. Use 2-3 connected clauses and proper punctuation. End with a period, exclamation or ellipsis. Do not use English letters, hashtags, names of real people, existing proverbs, quotations, song/movie lines, scriptures, factual claims, statistics, health claims, money promises or guarantees. Wrap ONE semantically important full word from each clause in *asterisks*.
-HOOK: 4-20 words, entirely Telugu script, curiosity-driven, ending with ? or !, and not copied from SCREEN.
+ISSUES: list every specific problem, or none`;
+  const raw=await groq(vp,model,.72);const clean=/^CLEAN:\s*yes\s*$/im.test(raw);const issues=raw.match(/ISSUES:\s*(.+)/i)?.[1]?.trim()||'';return {clean,issues};}
+function localTeluguSanity(q){const combined=normalizeTeluguText(`${q.title} ${q.screen} ${q.hook}`);const hits=hasAwkwardStructure(combined);if(hits.length)return {ok:false,issues:`Suspicious Telugu phrasing: ${hits.join(', ')}`};const weak=/\b(?:ముందు నడిపి|తీసుకెళ్లి.*దారిని|సులభం చేస్తుంది|బలం.*అవుతుంది)\b/.test(combined);if(weak)return {ok:false,issues:'Weak or potentially translated Telugu clause structure'};return {ok:true,issues:''};}
+async function makeQuote(){const themes=['కష్టపడితే వచ్చే ఫలితం','వైఫల్యం నుంచి నేర్చుకోవడం','ఆత్మవిశ్వాసం','సహనం మరియు ఓర్పు','లక్ష్యం వైపు ప్రయాణం','మార్పుతో వచ్చే కొత్త బలం','చిన్న ప్రయత్నం పెద్ద ఫలితం','గెలుపు వెనుక దాగి ఉన్న కష్టం','ఎక్కువ నమ్మకం పెట్టుకోవడం వల్ల వచ్చే నష్టం మరియు నిజమైన నమ్మకం ఎలా ఉండాలి','కష్టాల వెనుక దాగి ఉన్న నిజమైన శక్తి','కాలం నేర్పే పాఠాలు','నిశ్శబ్దంగా శ్రమపడటం, ఫలితం తనంతట తానే మాట్లాడటం','డబ్బు మరియు బంధాల మధ్య నిజమైన విలువ'];const theme=themes[state().runCount%themes.length];const prompt=`Create ONE completely original motivational life-wisdom quote for a Telugu YouTube Short. Theme: ${theme}.
+Think first in natural Telugu, not English. Do not translate an English motivational sentence into Telugu. The final text must sound native, conversational, mature and emotionally clear.
+TITLE: 2-4 word Telugu phrase, standard spelling, natural wording.
+SCREEN: exactly 16-36 words, entirely Telugu script, one coherent thought with 2-3 connected clauses. Prefer common natural Telugu verbs and nouns. Avoid ornate wording, forced metaphors, strange compounds and English-shaped sentence structures. Every clause must mean something a Telugu speaker would naturally say. End with ., ! or … .
+HOOK: 4-20 words, entirely Telugu script, natural curiosity-driven Telugu, ending with ? or !, and not repeating SCREEN.
 MOOD: 2-4 English mood words only.
-IMAGE_PROMPT: one detailed English prompt for one cinematic 9:16 photograph matching the quote, with no text, watermark, collage or recognizable public figure.
-Before answering, silently proofread every Telugu word for real dictionary usage, spelling, case markers, verb agreement, semantic pairings, natural idiom, originality and punctuation. If a phrase sounds translated from English, rewrite it into natural Telugu.
+IMAGE_PROMPT: one detailed English prompt for one cinematic 9:16 photograph matching the emotional meaning. No text, watermark, collage or recognizable public figure.
+Do not use English letters, hashtags, names of real people, existing proverbs, quotations, song/movie lines, scriptures, factual claims, statistics, health claims, money promises or guarantees.
+Before answering, silently rewrite anything that sounds translated, stiff, grammatically awkward, semantically strange, repetitive or overly literary. Check every case marker and verb choice. Choose the simplest natural Telugu wording.
 Return exactly five lines: TITLE: ...\nSCREEN: ...\nHOOK: ...\nMOOD: ...\nIMAGE_PROMPT: ...`;
-  const ATTEMPTS=6;
-  for(let i=1;i<=ATTEMPTS;i++){
-    const model=i<=3?PRIMARY_MODEL:FALLBACK_MODEL;
-    try{
-      const q=parse(await groq(prompt+(i>1?'\nPrevious attempt failed validation. Write a completely new thought and hook; do not reuse any phrase or wording from the previous attempt. Keep the Telugu natural and error-free.':''),model));
-      const basicOk=validQuote(q.screen)&&validTitle(q.title)&&validHook(q.hook)&&q.image&&!isDuplicate(q.title,q.screen,q.image);
-      const local=basicOk?localTeluguSanity(q):{ok:false,issues:'basic validation failed'};
-      const verify=basicOk&&local.ok?await verifyTelugu(q,model):null;
-      const ok=basicOk&&local.ok&&verify?.clean;
-      log(`Quote attempt ${i} [${model}]: title="${q.title}" (${countWords(q.title)}w), screen=${countWords(q.screen)}w, hook=${countWords(q.hook)}w, valid=${ok}${!local.ok?` (local: ${local.issues})`:''}${verify&&!verify.clean?` (verify: ${verify.issues})`:''}`);
-      if(ok)return q;
-    }catch(e){log(`Quote attempt ${i} [${model}] errored, moving on: ${e.message}`);}
-  }
-  const pool=FALLBACKS.filter(f=>!isDuplicate(f.title,f.screen,f.image));
-  if(!pool.length)throw new Error('All curated fallbacks have already been used and Groq keeps failing validation — add more FALLBACKS entries.');
-  const f=pool[state().runCount%pool.length];log(`Groq did not pass validation; using curated original fallback: ${f.title}`);return f;
-}
+  const ATTEMPTS=6;for(let i=1;i<=ATTEMPTS;i++){const model=i<=3?PRIMARY_MODEL:FALLBACK_MODEL;try{const q=parse(await groq(prompt+(i>1?'\nPrevious attempt was rejected because the Telugu was unnatural or structurally awkward. Write a completely fresh thought with simpler, more native Telugu. Do not reuse the rejected wording.':''),model));const basicOk=validQuote(q.screen)&&validTitle(q.title)&&validHook(q.hook)&&q.image&&!isDuplicate(q.title,q.screen,q.image);const local=basicOk?localTeluguSanity(q):{ok:false,issues:'basic validation failed'};const verify=basicOk&&local.ok?await verifyTelugu(q,model):null;const ok=basicOk&&local.ok&&verify?.clean;log(`Quote attempt ${i} [${model}]: title="${q.title}" (${countWords(q.title)}w), screen=${countWords(q.screen)}w, hook=${countWords(q.hook)}w, valid=${ok}${!local.ok?` (local: ${local.issues})`:''}${verify&&!verify.clean?` (verify: ${verify.issues})`:''}`);if(ok)return q;}catch(e){log(`Quote attempt ${i} [${model}] errored, moving on: ${e.message}`);}}
+  const pool=FALLBACKS.filter(f=>!isDuplicate(f.title,f.screen,f.image));if(!pool.length)throw new Error('All curated fallbacks have already been used and Groq keeps failing validation — add more FALLBACKS entries.');const f=pool[state().runCount%pool.length];log(`Groq did not pass validation; using curated original fallback: ${f.title}`);return f;}
 
-async function makeImage(prompt){
-  fs.mkdirSync(WORK_DIR,{recursive:true});
-  const enhanced=`${prompt}, vertical 9:16, cinematic still photograph, realistic natural human emotion, beautiful composition, soft depth of field, subtle film grain, no words, no letters, no logo, no watermark, no collage`;
-  const seed=Math.floor(Math.random()*1e9);const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(enhanced)}?width=1080&height=1920&nologo=true&seed=${seed}`;
-  const r=await get(url,{},60000);if(!r.ok)throw new Error(`AI image failed HTTP ${r.status}`);const b=Buffer.from(await r.arrayBuffer());if(b.length<10000)throw new Error('AI image response too small');
-  const p=path.join(WORK_DIR,'background.jpg');fs.writeFileSync(p,b);log('Created ONE quote-specific full-screen AI image.');return p;
-}
+async function makeImage(prompt){fs.mkdirSync(WORK_DIR,{recursive:true});const enhanced=`${prompt}, vertical 9:16, cinematic still photograph, realistic natural human emotion, beautiful composition, soft depth of field, subtle film grain, no words, no letters, no logo, no watermark, no collage`;const seed=Math.floor(Math.random()*1e9);const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(enhanced)}?width=1080&height=1920&nologo=true&seed=${seed}`;const r=await get(url,{},60000);if(!r.ok)throw new Error(`AI image failed HTTP ${r.status}`);const b=Buffer.from(await r.arrayBuffer());if(b.length<10000)throw new Error('AI image response too small');const p=path.join(WORK_DIR,'background.jpg');fs.writeFileSync(p,b);log('Created ONE quote-specific full-screen AI image.');return p;}
 function stripEmoji(s){return String(s||'').replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}]/gu,'').trim();}
 function escapeHtml(s){return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function splitChunks(words){const chunks=[];for(let i=0;i<words.length;i+=CHUNK_WORDS)chunks.push(words.slice(i,i+CHUNK_WORDS));if(chunks.length>1&&chunks[chunks.length-1].length===1){const last=chunks.pop();chunks[chunks.length-1]=chunks[chunks.length-1].concat(last);}return chunks;}
@@ -153,32 +118,9 @@ function pickHighlightIndex(chunkWords,highlightWords=[]){const marked=highlight
 const GRAPHEME_SEGMENTER=new Intl.Segmenter('te',{granularity:'grapheme'});
 function graphemes(s){return Array.from(GRAPHEME_SEGMENTER.segment(s),seg=>seg.segment);}
 function chunkFrameInner(wordGraphemes,highlightIdx,revealed){let remaining=revealed;const parts=[];for(let wi=0;wi<wordGraphemes.length&&remaining>0;wi++){const g=wordGraphemes[wi];const take=Math.min(remaining,g.length);if(take<=0)continue;const cls=wi===highlightIdx?'hi':'w';parts.push(`<span class="${cls}">${escapeHtml(g.slice(0,take).join(''))}</span>`);remaining-=take;}return parts.join(' ');}
-function chunkHtmlPage(inner,topLabel){
-  const topHtml=topLabel?`<div class="top">${escapeHtml(topLabel)}</div>`:'';
-  return `<!doctype html><html><head><meta charset="utf-8"><style>@font-face{font-family:'TeluguFont';src:url('file://${TELUGU_FONT}');}html,body{margin:0;padding:0;width:1080px;height:1920px;background:transparent;}.box{position:absolute;left:40px;top:560px;width:1000px;height:800px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 40px;}.txt{font-family:'TeluguFont',sans-serif;font-size:58px;font-weight:700;line-height:1.55;color:#fff;text-align:center;text-shadow:0 0 16px rgba(0,0,0,.55);-webkit-text-stroke:.8px #000;}.w,.hi{display:inline;}.hi{color:#ffd84d;}.top{position:absolute;top:190px;left:60px;width:960px;text-align:center;font-family:Arial,sans-serif;font-weight:700;font-size:42px;letter-spacing:1px;color:#fff;text-shadow:0 0 12px rgba(0,0,0,.55);-webkit-text-stroke:.8px #000;}</style></head><body>${topHtml}<div class="box"><div class="txt">${inner}</div></div></body></html>`;
-}
-async function renderChunkSequence(quote,highlightWords,topLabel){
-  fs.mkdirSync(FRAMES_DIR,{recursive:true});const words=quote.trim().split(/\s+/);const chunks=splitChunks(words);const timeline=[];
-  const browser=await puppeteer.launch({headless:'new',executablePath:CHROME_PATH,args:['--no-sandbox','--disable-setuid-sandbox']});const page=await browser.newPage();await page.setViewport({width:1080,height:1920,deviceScaleFactor:1});
-  try{let priorHtml='';for(let ci=0;ci<chunks.length;ci++){
-    const cw=chunks[ci];const highlightIdx=pickHighlightIndex(cw,highlightWords);const wordGraphemes=cw.map(graphemes);const totalGraphemes=wordGraphemes.reduce((n,g)=>n+g.length,0);
-    const stepCount=Math.min(Math.ceil(TYPE_BUDGET_SECONDS/TYPE_STEP_SECONDS),totalGraphemes);const revealCounts=[];for(let s=1;s<=stepCount;s++)revealCounts.push(Math.min(totalGraphemes,Math.ceil(totalGraphemes*s/stepCount)));revealCounts.push(totalGraphemes);
-    const isLastChunk=ci===chunks.length-1;let finalHtml='';
-    for(let si=0;si<revealCounts.length;si++){
-      const currentHtml=chunkFrameInner(wordGraphemes,highlightIdx,revealCounts[si]);finalHtml=currentHtml;const inner=priorHtml?`${priorHtml} ${currentHtml}`:currentHtml;await page.setContent(chunkHtmlPage(inner,topLabel),{waitUntil:'load'});await page.evaluate(()=>document.fonts.ready);
-      const p=path.join(FRAMES_DIR,`c${String(ci).padStart(3,'0')}_${si}.png`);await page.screenshot({path:p,omitBackground:true});const isLastStep=si===revealCounts.length-1;let duration;
-      if(isLastStep){const typedSeconds=(revealCounts.length-1)*TYPE_STEP_SECONDS;duration=Math.max(CHUNK_HOLD_SECONDS-typedSeconds,TYPE_STEP_SECONDS)+(isLastChunk?TAIL_PAD_SECONDS:0);}else duration=TYPE_STEP_SECONDS;timeline.push({path:p,duration});
-    }
-    priorHtml=priorHtml?`${priorHtml} ${finalHtml}`:finalHtml;
-  }}finally{await browser.close();}
-  const lines=[];for(const f of timeline){lines.push(`file '${f.path}'`);lines.push(`duration ${f.duration.toFixed(3)}`);}lines.push(`file '${timeline[timeline.length-1].path}'`);const listFile=path.join(FRAMES_DIR,'list.txt');fs.writeFileSync(listFile,lines.join('\n'),'utf8');
-  const totalSeconds=timeline.reduce((s,f)=>s+f.duration,0);return {listFile,totalSeconds};
-}
-async function render(image,quote,highlightWords=[],topLabel=''){
-  const out=path.join(WORK_DIR,'output.mp4');const {listFile,totalSeconds}=await renderChunkSequence(quote,highlightWords,topLabel);const frameCount=Math.round(totalSeconds*25);const zoomStep=(0.08/frameCount).toFixed(6);
-  const fc=`[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,zoompan=z='min(zoom+${zoomStep},1.08)':d=${frameCount}:s=1080x1920:fps=25[bg];[bg][2:v]overlay=0:0:format=auto[v];[1:a]volume=-18dB,afade=t=in:st=0:d=0.5[a]`;
-  execSync(`ffmpeg -y -loop 1 -i "${image}" -stream_loop -1 -i "${BGM_FILE}" -f concat -safe 0 -i "${listFile}" -filter_complex "${fc}" -map "[v]" -map "[a]" -t ${totalSeconds.toFixed(2)} -c:v libx264 -preset veryfast -crf 20 -pix_fmt yuv420p -c:a aac -b:a 128k -shortest "${out}"`,{stdio:'inherit'});return out;
-}
+function chunkHtmlPage(inner,topLabel){const topHtml=topLabel?`<div class="top">${escapeHtml(topLabel)}</div>`:'';return `<!doctype html><html><head><meta charset="utf-8"><style>@font-face{font-family:'TeluguFont';src:url('file://${TELUGU_FONT}');}html,body{margin:0;padding:0;width:1080px;height:1920px;background:transparent;}.box{position:absolute;left:40px;top:560px;width:1000px;height:800px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 40px;}.txt{font-family:'TeluguFont',sans-serif;font-size:58px;font-weight:700;line-height:1.55;color:#fff;text-align:center;text-shadow:0 0 16px rgba(0,0,0,.55);-webkit-text-stroke:.8px #000;}.w,.hi{display:inline;}.hi{color:#ffd84d;}.top{position:absolute;top:190px;left:60px;width:960px;text-align:center;font-family:Arial,sans-serif;font-weight:700;font-size:42px;letter-spacing:1px;color:#fff;text-shadow:0 0 12px rgba(0,0,0,.55);-webkit-text-stroke:.8px #000;}</style></head><body>${topHtml}<div class="box"><div class="txt">${inner}</div></div></body></html>`;}
+async function renderChunkSequence(quote,highlightWords,topLabel){fs.mkdirSync(FRAMES_DIR,{recursive:true});const words=quote.trim().split(/\s+/);const chunks=splitChunks(words);const timeline=[];const browser=await puppeteer.launch({headless:'new',executablePath:CHROME_PATH,args:['--no-sandbox','--disable-setuid-sandbox']});const page=await browser.newPage();await page.setViewport({width:1080,height:1920,deviceScaleFactor:1});try{let priorHtml='';for(let ci=0;ci<chunks.length;ci++){const cw=chunks[ci];const highlightIdx=pickHighlightIndex(cw,highlightWords);const wordGraphemes=cw.map(graphemes);const totalGraphemes=wordGraphemes.reduce((n,g)=>n+g.length,0);const stepCount=Math.min(Math.ceil(TYPE_BUDGET_SECONDS/TYPE_STEP_SECONDS),totalGraphemes);const revealCounts=[];for(let s=1;s<=stepCount;s++)revealCounts.push(Math.min(totalGraphemes,Math.ceil(totalGraphemes*s/stepCount)));revealCounts.push(totalGraphemes);const isLastChunk=ci===chunks.length-1;let finalHtml='';for(let si=0;si<revealCounts.length;si++){const currentHtml=chunkFrameInner(wordGraphemes,highlightIdx,revealCounts[si]);finalHtml=currentHtml;const inner=priorHtml?`${priorHtml} ${currentHtml}`:currentHtml;await page.setContent(chunkHtmlPage(inner,topLabel),{waitUntil:'load'});await page.evaluate(()=>document.fonts.ready);const p=path.join(FRAMES_DIR,`c${String(ci).padStart(3,'0')}_${si}.png`);await page.screenshot({path:p,omitBackground:true});const isLastStep=si===revealCounts.length-1;let duration;if(isLastStep){const typedSeconds=(revealCounts.length-1)*TYPE_STEP_SECONDS;duration=Math.max(CHUNK_HOLD_SECONDS-typedSeconds,TYPE_STEP_SECONDS)+(isLastChunk?TAIL_PAD_SECONDS:0);}else duration=TYPE_STEP_SECONDS;timeline.push({path:p,duration});}priorHtml=priorHtml?`${priorHtml} ${finalHtml}`:finalHtml;}}finally{await browser.close();}const lines=[];for(const f of timeline){lines.push(`file '${f.path}'`);lines.push(`duration ${f.duration.toFixed(3)}`);}lines.push(`file '${timeline[timeline.length-1].path}'`);const listFile=path.join(FRAMES_DIR,'list.txt');fs.writeFileSync(listFile,lines.join('\n'),'utf8');const totalSeconds=timeline.reduce((s,f)=>s+f.duration,0);return {listFile,totalSeconds};}
+async function render(image,quote,highlightWords=[],topLabel=''){const out=path.join(WORK_DIR,'output.mp4');const {listFile,totalSeconds}=await renderChunkSequence(quote,highlightWords,topLabel);const frameCount=Math.round(totalSeconds*25);const zoomStep=(0.08/frameCount).toFixed(6);const fc=`[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,zoompan=z='min(zoom+${zoomStep},1.08)':d=${frameCount}:s=1080x1920:fps=25[bg];[bg][2:v]overlay=0:0:format=auto[v];[1:a]volume=-18dB,afade=t=in:st=0:d=0.5[a]`;execSync(`ffmpeg -y -loop 1 -i "${image}" -stream_loop -1 -i "${BGM_FILE}" -f concat -safe 0 -i "${listFile}" -filter_complex "${fc}" -map "[v]" -map "[a]" -t ${totalSeconds.toFixed(2)} -c:v libx264 -preset veryfast -crf 20 -pix_fmt yuv420p -c:a aac -b:a 128k -shortest "${out}"`,{stdio:'inherit'});return out;}
 function buildDescription(hook){const hashtags='#TeluguQuotes #JeevithaSatyalu #TeluguMotivation #LifeWisdom #TeluguShorts #MotivationalQuotes #InspirationalQuotes #TeluguStatus #Shorts';return `${hook}\n\n✨ ప్రతిరోజూ ఒక కొత్త జీవిత సత్యం కోసం ఈ ఛానల్‌ని ఫాలో అవ్వండి.\nమీకు ఈ మాట నచ్చిందా? కామెంట్ చేసి చెప్పండి 💬\n\n${hashtags}`;}
 async function upload(video,title,hook){const auth=new google.auth.OAuth2(YT_CLIENT_ID,YT_CLIENT_SECRET);auth.setCredentials({refresh_token:YT_REFRESH_TOKEN});const yt=google.youtube({version:'v3',auth});const r=await yt.videos.insert({part:['snippet','status'],requestBody:{snippet:{title:title.slice(0,95),description:buildDescription(hook),tags:['telugu quotes','telugu motivational quotes','life wisdom shorts','telugu shorts','self improvement','జీవిత సత్యాలు','motivational quotes','inspirational quotes','telugu status'],categoryId:'27'},status:{privacyStatus:'private',selfDeclaredMadeForKids:false}},media:{body:fs.createReadStream(video)}});const url=`https://www.youtube.com/watch?v=${r.data.id}`;const studioUrl=`https://studio.youtube.com/video/${r.data.id}/edit`;log(`Uploaded as PRIVATE (pending your review): ${url}`);const review=`## Review required before publishing\n\n- Title: ${title}\n- Watch (private): ${url}\n- Edit in Studio: ${studioUrl}\n\nCheck the Telugu text, image and audio, then set visibility to Public yourself in YouTube Studio to publish.`;fs.mkdirSync(WORK_DIR,{recursive:true});fs.writeFileSync(REVIEW_FILE,review,'utf8');}
 async function main(){fs.mkdirSync(WORK_DIR,{recursive:true});for(const [n,v] of Object.entries({GROQ_API_KEY,YT_CLIENT_ID,YT_CLIENT_SECRET,YT_REFRESH_TOKEN}))if(!v)throw new Error(`${n} is missing`);if(!fs.existsSync(BGM_FILE))throw new Error(`Bundled BGM file missing: ${BGM_FILE}`);log('Run: quote (Telugu script) + ONE full-screen matching image + fixed channel BGM. NO VOICE. Uploads PRIVATE for review.');const q=await makeQuote();log(`SCREEN (${countWords(q.screen)} words): ${q.screen}`);log(`HOOK: ${q.hook}`);log(`IMAGE: ${q.image}`);log(`HIGHLIGHT WORDS: ${(q.highlightWords||[]).join(', ')||'(none marked)'}`);const topLabel=pickTopLabel(q.mood);log(`TOP LABEL: ${topLabel}`);const image=await makeImage(q.image);const video=await render(image,q.screen,q.highlightWords,topLabel);const titleWithEmoji=`${pickEmoji(q.mood)} ${q.title}`;await upload(video,titleWithEmoji,q.hook);saveState(q.title,q.screen,q.image);log('Done. Waiting on your manual review/publish.');}
