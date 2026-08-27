@@ -1,7 +1,7 @@
 {
-  "runCount": 36,
-  "lastTitle": "స్వప్నాల మార్గం",
-  "lastDate": "2026-08-27T07:41:35.812Z",
+  "runCount": 37,
+  "lastTitle": "శక్తి ప్రయాణం",
+  "lastDate": "2026-08-27T07:50:41.744Z",
   "used": [
     {
       "title": "చిన్న ప్రయత్నం, పెద్ద ఫలం",
@@ -148,6 +148,11 @@
       "title": "స్వప్నాల మార్గం",
       "screen": "సవాళ్ళను స్వీకరించు, ప్రతిఘటనలో నీవు బలం కనుగొంటావు, జీవితపు అల్లరి నడుమ నిన్ను నిలుపుతుంది. ప్రతి అడుగులో కొత్త వెలుగు, ఆశలు నింపుకొని ముందుకు సాగు.",
       "image": "A cinematic close-up of a sunrise over a misty mountain ridge, soft golden light illuminating the peaks, a solitary silhouette walking forward, the sky painted with warm hues, 9:16 aspect ratio, high dynamic range, cinematic lighting, no text"
+    },
+    {
+      "title": "శక్తి ప్రయాణం",
+      "screen": "స్వప్నాల పయనం ఎప్పుడూ సులభం కాదు, కానీ ప్రతి అడుగు నీ అంతర్గత శక్తిని వెలుగులోకి తెస్తూ, నీవు ఆకాశాన్ని చేరుకుంటావు.",
+      "image": "A sunrise over a misty mountain ridge, a lone figure standing on a cliff edge, arms raised toward the sky, with rays of golden light breaking through clouds, cinematic wide-angle shot, vibrant warm tones, dramatic clouds, subtle bokeh, high dynamic range, 9:16 vertical composition."
     }
   ]
 }
