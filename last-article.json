@@ -1,7 +1,7 @@
 {
-  "runCount": 40,
-  "lastTitle": "మార్గం చూపు",
-  "lastDate": "2026-08-27T11:51:45.349Z",
+  "runCount": 41,
+  "lastTitle": "కష్టంలో అవకాశం",
+  "lastDate": "2026-08-27T18:08:14.229Z",
   "used": [
     {
       "title": "చిన్న ప్రయత్నం, పెద్ద ఫలం",
@@ -168,6 +168,11 @@
       "title": "మార్గం చూపు",
       "screen": "వేగంగా మారుతున్న ప్రపంచంలో, మనసు మీద ఆధారపడే శక్తి మనకు అడ్డంకులను దాటించేందుకు మార్గం చూపుతుంది. కలలను ఎప్పుడూ మర్చిపోకండి, వాటిని సాధించడానికి ప్రయత్నించండి, ప్రతి అడుగు ఒక కొత్త ప్రారంభం.",
       "image": "A sunrise over a misty mountain ridge, a lone figure standing on a cliff, arms outstretched, looking toward the horizon, dramatic lighting, cinematic composition, 9:16 aspect ratio, vibrant colors, high-resolution, realistic style."
+    },
+    {
+      "title": "కష్టంలో అవకాశం",
+      "screen": "కష్టం వచ్చినప్పుడు దారి మూసుకుపోయిందని అనిపించవచ్చు, కానీ అదే పరిస్థితి మనలో దాగి ఉన్న సామర్థ్యాన్ని బయటకు తెచ్చే అవకాశంగా మారుతుంది.",
+      "image": "person standing before a steep mountain trail after rain, sunlight breaking through clouds, cinematic vertical photography"
     }
   ]
 }
