@@ -3,9 +3,13 @@ name: Wisdom Quote Short
 on:
   workflow_dispatch:
   schedule:
-    # 14:00 UTC = 19:30 IST — evening slot when Telugu regional-content
-    # viewership is typically higher than the previous 09:00 IST run.
-    - cron: '0 14 * * *'
+    # 3 runs/day at times when Telugu Shorts audience is typically most active:
+    # 02:30 UTC = 08:00 IST (morning commute/scroll)
+    # 07:30 UTC = 13:00 IST (lunch break)
+    # 14:30 UTC = 20:00 IST (evening prime time)
+    - cron: '30 2 * * *'
+    - cron: '30 7 * * *'
+    - cron: '30 14 * * *'
 
 permissions:
   contents: write
