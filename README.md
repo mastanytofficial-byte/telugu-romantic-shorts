@@ -20,3 +20,4 @@ check it, and you can always edit/unlist/delete it in YouTube Studio.
 
 These must belong to the YouTube channel/Google account this repo publishes
 to.
+<!-- schedule resync 2026-08-28T05:43:55Z -->
