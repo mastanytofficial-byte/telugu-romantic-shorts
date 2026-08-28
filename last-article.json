@@ -1,7 +1,7 @@
 {
-  "runCount": 42,
-  "lastTitle": "మార్గం సాహసము",
-  "lastDate": "2026-08-28T05:47:07.263Z",
+  "runCount": 43,
+  "lastTitle": "జ్వలించు ఆశయం",
+  "lastDate": "2026-08-28T21:54:36.187Z",
   "used": [
     {
       "title": "చిన్న ప్రయత్నం, పెద్ద ఫలం",
@@ -178,6 +178,11 @@
       "title": "మార్గం సాహసము",
       "screen": "మార్గం ఎప్పుడూ సులభంగా ఉండదు, మనసు ధైర్యం కలిగి ఉంటే, అడ్డంకులు చిన్నవిగా కనిపించి, ప్రతిబంధకాలు అవకాశాలుగా మారి, ముందుకు సాగితే మన లక్ష్యాలు చేరుకుంటాయి.",
       "image": "A dramatic sunrise over a lone mountain trail, mist swirling at the base, a solitary figure standing at the summit looking out over a vast valley, cinematic lighting, high detail, 9:16 aspect ratio."
+    },
+    {
+      "title": "జ్వలించు ఆశయం",
+      "screen": "ప్రతి ఉదయం కొత్త అవకాశాలు తెస్తుంది, మనసు తెరచి, హృదయం విశ్వాసం తో నిండినప్పుడు, జీవితం మనకు ఆనందంగా మారుతుంది, మరియు సాహసంతో నడుస్తూ ముందుకు.",
+      "image": "A sunrise over a misty mountain ridge, golden light filtering through early clouds, casting a warm glow on a lone figure standing on a cliff, shoulders back, looking toward the horizon, cinematic widescreen 9:16, dramatic sky, soft pastel colors, high dynamic range, subtle lens flare."
     }
   ]
 }
