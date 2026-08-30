@@ -1,7 +1,7 @@
 {
-  "runCount": 51,
-  "lastTitle": "వెలుగు పథం",
-  "lastDate": "2026-08-30T06:33:04.014Z",
+  "runCount": 52,
+  "lastTitle": "కొత్త పాఠం",
+  "lastDate": "2026-08-30T08:31:00.545Z",
   "used": [
     {
       "title": "చిన్న ప్రయత్నం, పెద్ద ఫలం",
@@ -223,6 +223,11 @@
       "title": "వెలుగు పథం",
       "screen": "జీవిత ప్రయాణంలో ప్రతి అడుగు ఒక కొత్త కథ, ప్రతి ఆశ మనకు మార్గదర్శి, సవాళ్లను సహనంతో ఎదుర్కొని, మనం ఎప్పటికీ ముందుకు సాగాలి.",
       "image": "A sunrise over a winding mountain trail, mist curling around ancient stone steps, a lone hiker in a vibrant red jacket stepping forward, cinematic lighting, dramatic sky, 9:16 portrait orientation"
+    },
+    {
+      "title": "కొత్త పాఠం",
+      "screen": "ప్రతి వైఫల్యం వెనుక ఒక కొత్త పాఠం దాగి ఉంటుంది, దాన్ని అర్థం చేసుకున్నప్పుడు మనలోని బలం మరింత పెరుగుతుంది, అదే బలం కొత్త దారిని చూపిస్తుంది.",
+      "image": "person standing before a cracked open door with warm light spilling through, cinematic vertical photography"
     }
   ]
 }
