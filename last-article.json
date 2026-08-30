@@ -1,7 +1,7 @@
 {
-  "runCount": 53,
-  "lastTitle": "జీవిత పథం",
-  "lastDate": "2026-08-30T13:12:25.742Z",
+  "runCount": 54,
+  "lastTitle": "జీవితం మలచు",
+  "lastDate": "2026-08-30T18:12:40.984Z",
   "used": [
     {
       "title": "చిన్న ప్రయత్నం, పెద్ద ఫలం",
@@ -233,6 +233,11 @@
       "title": "జీవిత పథం",
       "screen": "ప్రతి ఉదయం కొత్త ఆశలతో నిండిన జీవితం, మనసులో ఉన్న సాహసాన్ని మేల్కొలిపి, మన కలలను నెరవేర్చే ప్రయాణం, ఎప్పుడూ ముందుకు సాగుతూ, మన స్వప్నాలను నిజం చేసుకుంటూ.",
       "image": "A sunrise over a quiet mountain path, a lone figure walking forward, silhouette against golden light, cinematic wide-angle, high dynamic range, soft focus, cinematic color grading, 9:16 vertical composition."
+    },
+    {
+      "title": "జీవితం మలచు",
+      "screen": "ప్రతి ఉదయం మనసు కొత్త ఆశలతో మేల్కొని, మన కలల్ని వాస్తవంగా మార్చడానికి మన గుండెలోని బలం ను పిలుస్తాం ప్రయత్నం చేస్తూ.",
+      "image": "A sunrise over a misty mountain trail, a lone hiker stepping forward, silhouette against golden light, cinematic wide shot, high resolution, vibrant colors, dramatic atmosphere."
     }
   ]
 }
