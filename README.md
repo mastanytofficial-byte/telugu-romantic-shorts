@@ -3,8 +3,10 @@
 Automated Telugu life-wisdom/motivational quote YouTube Shorts generator.
 
 Each run generates one original quote in native Telugu script (Groq LLM), a
-matching AI image, and renders/uploads a 9:16 video over a fixed channel BGM
-(`assets/bgm.mp3`, "A Quiet Thought (Calm)" by Wayne Jones, trimmed to 20s).
+matching AI image, and renders/uploads a 9:16 video over a randomly picked
+channel BGM (`assets/bgm-motivation.mp3` by leberch, or
+`assets/bgm-climax-piano.mp3` by Clavier-Music — both royalty-free, Pixabay
+Content License).
 
 **Auto-publish:** videos upload directly as **Public**. No manual review step —
 each run's video goes live immediately after upload. The generator still
