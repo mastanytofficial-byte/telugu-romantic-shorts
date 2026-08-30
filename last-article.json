@@ -1,7 +1,7 @@
 {
-  "runCount": 52,
-  "lastTitle": "కొత్త పాఠం",
-  "lastDate": "2026-08-30T08:31:00.545Z",
+  "runCount": 53,
+  "lastTitle": "జీవిత పథం",
+  "lastDate": "2026-08-30T13:12:25.742Z",
   "used": [
     {
       "title": "చిన్న ప్రయత్నం, పెద్ద ఫలం",
@@ -228,6 +228,11 @@
       "title": "కొత్త పాఠం",
       "screen": "ప్రతి వైఫల్యం వెనుక ఒక కొత్త పాఠం దాగి ఉంటుంది, దాన్ని అర్థం చేసుకున్నప్పుడు మనలోని బలం మరింత పెరుగుతుంది, అదే బలం కొత్త దారిని చూపిస్తుంది.",
       "image": "person standing before a cracked open door with warm light spilling through, cinematic vertical photography"
+    },
+    {
+      "title": "జీవిత పథం",
+      "screen": "ప్రతి ఉదయం కొత్త ఆశలతో నిండిన జీవితం, మనసులో ఉన్న సాహసాన్ని మేల్కొలిపి, మన కలలను నెరవేర్చే ప్రయాణం, ఎప్పుడూ ముందుకు సాగుతూ, మన స్వప్నాలను నిజం చేసుకుంటూ.",
+      "image": "A sunrise over a quiet mountain path, a lone figure walking forward, silhouette against golden light, cinematic wide-angle, high dynamic range, soft focus, cinematic color grading, 9:16 vertical composition."
     }
   ]
 }
