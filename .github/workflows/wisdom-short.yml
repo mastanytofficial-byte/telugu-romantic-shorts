@@ -55,44 +55,13 @@ jobs:
         run: node --check wisdom_simple.js
 
       - name: Generate and upload (private, pending review)
-        id: gen
-        continue-on-error: true
         timeout-minutes: 15
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
-        run: node wisdom_simple.js 2>&1 | tee /tmp/run.log
-
-      - name: Post debug log to job summary
-        if: always()
-        run: |
-          echo "## Debug log" >> "$GITHUB_STEP_SUMMARY"
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
-          tail -c 60000 /tmp/run.log >> "$GITHUB_STEP_SUMMARY" || echo "no log" >> "$GITHUB_STEP_SUMMARY"
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Commit debug log (orphan branch)
-        if: always()
-        run: |
-          set -uo pipefail
-          mkdir -p /tmp/debugrepo && cd /tmp/debugrepo
-          git init -q
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git switch --orphan debug-log
-          cp /tmp/run.log ./last-run.log || echo "no log" > ./last-run.log
-          git add last-run.log
-          git commit -q -m "debug log"
-          git remote add origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
-          git push -q -f origin debug-log
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-
-      - name: Fail job if generation failed
-        if: steps.gen.outcome == 'failure'
-        run: exit 1
+        run: node wisdom_simple.js
 
       - name: Post review link to job summary
         if: always()
