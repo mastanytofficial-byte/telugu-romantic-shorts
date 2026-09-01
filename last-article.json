@@ -1,7 +1,7 @@
 {
-  "runCount": 60,
-  "lastTitle": "కష్టంలో అవకాశం",
-  "lastDate": "2026-09-01T09:23:20.149Z",
+  "runCount": 61,
+  "lastTitle": "స్వప్నాల పథం",
+  "lastDate": "2026-09-01T12:43:50.795Z",
   "used": [
     {
       "title": "చిన్న ప్రయత్నం, పెద్ద ఫలం",
@@ -268,6 +268,11 @@
       "title": "కష్టంలో అవకాశం",
       "screen": "కష్టం వచ్చినప్పుడు దారి మూసుకుపోయిందని అనిపించవచ్చు, కానీ అదే పరిస్థితి మనలో దాగి ఉన్న సామర్థ్యాన్ని బయటకు తెచ్చే అవకాశంగా మారుతుంది.",
       "image": "person standing before a steep mountain trail after rain, sunlight breaking through clouds, cinematic vertical photography"
+    },
+    {
+      "title": "స్వప్నాల పథం",
+      "screen": "ఈ జీవితంలో ప్రతి అడుగు కొత్త ఆశలను తెస్తుంది, మనసులోని విశ్వాసం ద్వారా మనం ఏదైనా సాధించగలం, కష్టాలను అవకాశాలుగా మార్చుకుంటూ ముందుకు సాగాలి.",
+      "image": "A cinematic sunrise over a misty mountain trail, a lone figure walking forward, low camera angle, warm golden hues, dramatic lighting, 9:16 aspect ratio"
     }
   ]
 }
