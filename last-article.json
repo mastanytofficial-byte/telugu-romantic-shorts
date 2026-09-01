@@ -1,7 +1,7 @@
 {
-  "runCount": 59,
-  "lastTitle": "ఉదయం వెలుగు",
-  "lastDate": "2026-09-01T08:55:44.023Z",
+  "runCount": 60,
+  "lastTitle": "కష్టంలో అవకాశం",
+  "lastDate": "2026-09-01T09:23:20.149Z",
   "used": [
     {
       "title": "చిన్న ప్రయత్నం, పెద్ద ఫలం",
@@ -263,6 +263,11 @@
       "title": "ఉదయం వెలుగు",
       "screen": "ప్రతి ఉదయం కొత్త ఆశలను తెచ్చే స్వప్నం మేల్కొనే సమయం. మనము నిశ్శబ్దంగా మన హృదయంలోని ధైర్యాన్ని కనుగొని, జీవితపు సవాళ్లను ఎదుర్కొని ముందుకు సాగాలి.",
       "image": "A cinematic sunrise over a calm lake, mist rising, a lone figure standing on the shore looking toward the horizon, soft golden light illuminating the scene, wide angle, high resolution, 9:16 aspect ratio."
+    },
+    {
+      "title": "కష్టంలో అవకాశం",
+      "screen": "కష్టం వచ్చినప్పుడు దారి మూసుకుపోయిందని అనిపించవచ్చు, కానీ అదే పరిస్థితి మనలో దాగి ఉన్న సామర్థ్యాన్ని బయటకు తెచ్చే అవకాశంగా మారుతుంది.",
+      "image": "person standing before a steep mountain trail after rain, sunlight breaking through clouds, cinematic vertical photography"
     }
   ]
 }
