@@ -1,7 +1,7 @@
 {
-  "runCount": 66,
-  "lastTitle": "కొత్త ప్రయాణం",
-  "lastDate": "2026-09-02T03:08:37.212Z",
+  "runCount": 67,
+  "lastTitle": "కొత్త ఆశ",
+  "lastDate": "2026-09-02T07:18:32.510Z",
   "used": [
     {
       "title": "చిన్న ప్రయత్నం, పెద్ద ఫలం",
@@ -298,6 +298,11 @@
       "title": "కొత్త ప్రయాణం",
       "screen": "విధి అనేది మనం ఎప్పుడూ చూసే మార్గం కాదు, అది మనం తీసుకున్న ప్రతి అడుగుతోనే రూపొందుతుంది, అందులో ఉద్దేశ్య మనకు మార్గదర్శకంగా ఉంటుంది.",
       "image": "A lone figure standing on a cliff overlooking a sunrise horizon, silhouette against the golden sky, cinematic vertical frame, dramatic lighting, subtle mist, evokes hope and new beginnings."
+    },
+    {
+      "title": "కొత్త ఆశ",
+      "screen": "సమయం ఎప్పుడూ మనకు కొత్త ప్రారంభం ఇస్తుంది, మనం ఆ శక్తిని గుర్తించి, మన కలలను పునరుద్ధరించాలి, సరళమైన అడుగులతో ముందుకు వెళితే, జీవితపు మార్గం ప్రకాశిస్తుంది.",
+      "image": "young woman walking on a misty mountain path at dawn, soft golden light filtering through clouds, cinematic vertical composition, dramatic sky, subtle lens flare, high resolution, 9:16 aspect ratio"
     }
   ]
 }
