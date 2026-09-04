@@ -1,7 +1,7 @@
 {
-  "runCount": 78,
-  "lastTitle": "జీవిత సూత్రం",
-  "lastDate": "2026-09-04T10:47:43.187Z",
+  "runCount": 79,
+  "lastTitle": "అజేయ దారి",
+  "lastDate": "2026-09-04T11:33:35.989Z",
   "used": [
     {
       "title": "చిన్న ప్రయత్నం, పెద్ద ఫలం",
@@ -358,10 +358,16 @@
       "title": "జీవిత సూత్రం",
       "screen": "ప్రతి ఉదయం మనం ఎప్పుడూ బలం కలిగి ఉంటాం, కానీ అది సాహసము లేకుండా ఆశకి మారదు మరియు మన ప్రయాణం అందంగా మారుతుంది.",
       "image": "a sunrise over a misty hill with a lone figure walking forward, cinematic vertical composition, soft golden light, high dynamic range, 4K resolution"
+    },
+    {
+      "title": "అజేయ దారి",
+      "screen": "సవాలు ఎదురైనప్పుడే, మన మనసు సాహసాన్ని పెంచుకుంటుంది, ఆ సాహసంతో ముందుకు సాగి, కొత్త అవకాశాలు మనకు విజయం గా మారుతాయి.",
+      "image": "a lone young woman standing on a cliff at sunrise, looking out over a misty valley, rays of light breaking through clouds, cinematic lighting, 9:16 aspect ratio"
     }
   ],
   "usedBg": [
     "27636293",
-    "26536165"
+    "26536165",
+    "28074817"
   ]
 }
