@@ -1,0 +1,32 @@
+const fs=require('fs');
+const path=require('path');
+const SOURCE=path.join(__dirname,'wisdom_simple.js');
+let source=fs.readFileSync(SOURCE,'utf8');
+const oldPick="function pickTopLabel(m){const hit=MOOD_TOP_LABEL.find(([re])=>re.test(m||''));return hit?hit[1]:'LIFE LESSON 💡'}";
+const newPick=`function pickTopLabel(){const st=state();const stored=Array.isArray(st.themeHistory)?st.themeHistory:[];const used=Array.isArray(st.used)?st.used.map(x=>x&&x.topLabel).filter(x=>TOP_LABELS.includes(x)):[];const history=[...stored,...used];const counts=new Map(TOP_LABELS.map(l=>[l,0]));for(const l of history)counts.set(l,(counts.get(l)||0)+1);const lastIndex=new Map(TOP_LABELS.map(l=>[l,-1]));history.forEach((l,i)=>{if(TOP_LABELS.includes(l))lastIndex.set(l,i)});const minCount=Math.min(...TOP_LABELS.map(l=>counts.get(l)));let candidates=TOP_LABELS.filter(l=>counts.get(l)===minCount);if(candidates.length>1){const neverUsed=candidates.filter(l=>lastIndex.get(l)===-1);if(neverUsed.length)candidates=neverUsed;const offset=(st.runCount||0)%candidates.length;candidates=[...candidates.slice(offset),...candidates.slice(0,offset)]}const chosen=candidates[0]||'LIFE LESSON 💡';globalThis.__balancedTopLabel=chosen;return chosen}`;
+if(!source.includes(oldPick))throw new Error('theme balance patch: pickTopLabel anchor not found');
+source=source.replace(oldPick,newPick);
+const oldMake="async function makeQuote(){const prompt=`";
+const newMake="async function makeQuote(){const selectedTopLabel=pickTopLabel();const prompt=`";
+if(!source.includes(oldMake))throw new Error('theme balance patch: makeQuote anchor not found');
+source=source.replace(oldMake,newMake);
+const oldPrompt="TOP_LABEL: pick the single best-fitting option from this exact list (copy it exactly, including the emoji): ${TOP_LABELS.join(' | ')}";
+const newPrompt="TOP_LABEL: use EXACTLY this preselected option (do not change it): ${selectedTopLabel}";
+if(!source.includes(oldPrompt))throw new Error('theme balance patch: TOP_LABEL prompt anchor not found');
+source=source.replace(oldPrompt,newPrompt);
+const oldSave="function saveState(t,s,i,bgId){const st=state(),usedBg=bgId?[...(st.usedBg||[]),String(bgId)].slice(-40):(st.usedBg||[]);fs.writeFileSync(STATE_FILE,JSON.stringify({runCount:(st.runCount||0)+1,lastTitle:t,lastDate:new Date().toISOString(),used:[...(st.used||[]),{title:t,screen:s,image:i}],usedBg},null,2))}";
+const newSave="function saveState(t,s,i,bgId){const st=state(),usedBg=bgId?[...(st.usedBg||[]),String(bgId)].slice(-40):(st.usedBg||[]),label=globalThis.__balancedTopLabel||'';const themeHistory=[...(st.themeHistory||[]),...(label?[label]:[])].slice(-40);fs.writeFileSync(STATE_FILE,JSON.stringify({runCount:(st.runCount||0)+1,lastTitle:t,lastDate:new Date().toISOString(),used:[...(st.used||[]),{title:t,screen:s,image:i,topLabel:label}],usedBg,themeHistory},null,2))}";
+if(!source.includes(oldSave))throw new Error('theme balance patch: saveState anchor not found');
+source=source.replace(oldSave,newSave);
+const oldMain="const top=q.topLabel||pickTopLabel(q.mood);";
+const newMain="const top=q.topLabel||pickTopLabel();";
+if(!source.includes(oldMain))throw new Error('theme balance patch: main top-label anchor not found');
+source=source.replace(oldMain,newMain);
+// Legacy state has no theme labels. Seed only the two themes the channel has just been overusing,
+// so the first balanced run intentionally moves away from them; future runs use persisted history.
+const oldState="function state(){try{return JSON.parse(fs.readFileSync(STATE_FILE,'utf8'))}catch{return {runCount:0,used:[]}}}";
+const newState="function state(){try{const s=JSON.parse(fs.readFileSync(STATE_FILE,'utf8'));if(!Array.isArray(s.themeHistory)&&!(s.used||[]).some(x=>x&&x.topLabel)){s.themeHistory=['MINDSET 🧠','INNER POWER 🔥']}return s}catch{return {runCount:0,used:[],themeHistory:[]}}}";
+if(!source.includes(oldState))throw new Error('theme balance patch: state anchor not found');
+source=source.replace(oldState,newState);
+const runner=new Function('require','process','__dirname','__filename',source);
+runner(require,process,__dirname,SOURCE);
