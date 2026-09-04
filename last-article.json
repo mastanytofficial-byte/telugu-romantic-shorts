@@ -1,7 +1,7 @@
 {
-  "runCount": 84,
-  "lastTitle": "కొత్త సవాలు",
-  "lastDate": "2026-09-04T19:11:35.817Z",
+  "runCount": 85,
+  "lastTitle": "ఆశల మలుపు",
+  "lastDate": "2026-09-04T19:27:33.581Z",
   "used": [
     {
       "title": "చిన్న ప్రయత్నం, పెద్ద ఫలం",
@@ -392,6 +392,12 @@
       "screen": "ప్రతి రోజు కొత్త సవాలు వచ్చినప్పుడు, మనము సాహసంతో ముందుకు సాగితే, మన జీవితం మెరుగైన ప్రయాణం అవుతుంది, కొత్త అవకాశాలు మనకు ఇస్తాయి.",
       "image": "young woman standing on cliff overlooking ocean at sunrise, cinematic vertical frame, warm golden light, serene atmosphere, hopeful mood",
       "topLabel": "NEW BEGINNING 🌅"
+    },
+    {
+      "title": "ఆశల మలుపు",
+      "screen": "అసమర్థత అనిపించినప్పుడు, మనం సహనం పెంచుకుంటాం, ఆ సహనం మనకు సాహసాన్ని ఇస్తుంది, ఆ సాహసంతో మనం కలలను నిజం చేస్తాం.",
+      "image": "A young woman standing at a quiet crossroads in a misty dawn, holding a small lantern, looking determined, cinematic vertical composition, soft warm light illuminating her face, subtle reflection of sunrise behind her, realistic style",
+      "topLabel": "TRUE WORDS ⏳"
     }
   ],
   "usedBg": [
@@ -402,7 +408,8 @@
     "4762374",
     "35451292",
     "30512846",
-    "27694678"
+    "27694678",
+    "30068609"
   ],
   "themeHistory": [
     "MINDSET 🧠",
@@ -410,6 +417,7 @@
     "LIFE LESSON 💡",
     "STAY CALM 🍃",
     "KEEP GROWING 🌱",
-    "NEW BEGINNING 🌅"
+    "NEW BEGINNING 🌅",
+    "TRUE WORDS ⏳"
   ]
 }
