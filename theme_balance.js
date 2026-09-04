@@ -7,7 +7,7 @@ const newPick=`function pickTopLabel(){const st=state();const stored=Array.isArr
 if(!source.includes(oldPick))throw new Error('theme balance patch: pickTopLabel anchor not found');
 source=source.replace(oldPick,newPick);
 const oldMake="async function makeQuote(){const prompt=`";
-const newMake="async function makeQuote(){const selectedTopLabel=pickTopLabel();const qualityGuard='Write in natural, modern native Telugu as a Telugu speaker would actually say it. Prioritize correct Telugu grammar, natural verb-noun agreement, natural case endings, and smooth sentence flow. Do NOT translate English sentence structure word-for-word. Avoid unnecessarily Sanskritized or archaic forms when a simple natural Telugu form exists. Every sentence must sound human, clear, motivational, and polished for a Telugu YouTube Short. Before returning, silently proofread the Telugu for grammar and naturalness.';const prompt=`${qualityGuard}\\n\\n";
+const newMake="async function makeQuote(){const selectedTopLabel=pickTopLabel();const prompt=`TELUGU QUALITY RULES: Write in natural, modern native Telugu as a Telugu speaker would actually say it. Use correct Telugu grammar, natural case endings, natural verb-noun agreement, and smooth sentence flow. Do not translate English sentence structure word-for-word. Avoid awkward literal translations, unnecessary Sanskritized or archaic wording, and unnatural phrases such as using ‘పెడతాయి’ where ‘పెంచుతాయి/ఇస్తాయి’ is intended. Make every sentence sound human, clear, motivational, and polished for a Telugu YouTube Short. Silently proofread the Telugu before returning.\\n\\n";
 if(!source.includes(oldMake))throw new Error('theme balance patch: makeQuote anchor not found');
 source=source.replace(oldMake,newMake);
 const oldPrompt="TOP_LABEL: pick the single best-fitting option from this exact list (copy it exactly, including the emoji): ${TOP_LABELS.join(' | ')}";
@@ -19,7 +19,7 @@ const newValid="function validTelugu(s,min,max){const c=normalize(s);const bad=[
 if(!source.includes(oldValid))throw new Error('theme balance patch: validTelugu anchor not found');
 source=source.replace(oldValid,newValid);
 const oldSave="function saveState(t,s,i,bgId){const st=state(),usedBg=bgId?[...(st.usedBg||[]),String(bgId)].slice(-40):(st.usedBg||[]);fs.writeFileSync(STATE_FILE,JSON.stringify({runCount:(st.runCount||0)+1,lastTitle:t,lastDate:new Date().toISOString(),used:[...(st.used||[]),{title:t,screen:s,image:i}],usedBg},null,2))}";
-const newSave="function saveState(t,s,i,bgId){const st=state(),usedBg=bgId?[...(st.usedBg||[]),String(bgId)].slice(-40):(st.usedBg||[]),label=globalThis.__balancedTopLabel||'';const themeHistory=[...(st.themeHistory||[]),...(label?[label]:[])].slice(-40);fs.writeFileSync(STATE_FILE,JSON.stringify({runCount:(st.runCount||0)+1,lastTitle:t,lastDate:new Date().toISOString(),used:[...(st.used||[]),{title:t,screen:s,image:i,topLabel:label}],usedBg,themeHistory},null,2))}";
+const newSave="function saveState(t,s,i,bgId){const st=state(),usedBg=bgId?[...(st.usedBg||[]),String(bgId)].slice(-40):(st.usedBg||[]);const label=globalThis.__balancedTopLabel||'';const themeHistory=[...(st.themeHistory||[]),...(label?[label]:[])].slice(-40);fs.writeFileSync(STATE_FILE,JSON.stringify({runCount:(st.runCount||0)+1,lastTitle:t,lastDate:new Date().toISOString(),used:[...(st.used||[]),{title:t,screen:s,image:i,topLabel:label}],usedBg,themeHistory},null,2))}";
 if(!source.includes(oldSave))throw new Error('theme balance patch: saveState anchor not found');
 source=source.replace(oldSave,newSave);
 const oldMain="const top=q.topLabel||pickTopLabel(q.mood);";
@@ -30,8 +30,6 @@ const oldPool="const pool=FALLBACKS.filter(f=>!dup(f.title,f.screen,f.image));";
 const newPool="const selectedPool=FALLBACKS.filter(f=>f.topLabel===globalThis.__balancedTopLabel&&!dup(f.title,f.screen,f.image));const pool=selectedPool.length?selectedPool:FALLBACKS.filter(f=>!dup(f.title,f.screen,f.image));";
 if(!source.includes(oldPool))throw new Error('theme balance patch: fallback pool anchor not found');
 source=source.replace(oldPool,newPool);
-// Legacy state has no theme labels. Seed only the two themes the channel has just been overusing,
-// so the first balanced run intentionally moves away from them; future runs use persisted history.
 const oldState="function state(){try{return JSON.parse(fs.readFileSync(STATE_FILE,'utf8'))}catch{return {runCount:0,used:[]}}}";
 const newState="function state(){try{const s=JSON.parse(fs.readFileSync(STATE_FILE,'utf8'));if(!Array.isArray(s.themeHistory)&&!(s.used||[]).some(x=>x&&x.topLabel)){s.themeHistory=['MINDSET 🧠','INNER POWER 🔥']}return s}catch{return {runCount:0,used:[],themeHistory:[]}}}";
 if(!source.includes(oldState))throw new Error('theme balance patch: state anchor not found');
