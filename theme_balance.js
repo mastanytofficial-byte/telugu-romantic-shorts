@@ -19,9 +19,13 @@ const newSave="function saveState(t,s,i,bgId){const st=state(),usedBg=bgId?[...(
 if(!source.includes(oldSave))throw new Error('theme balance patch: saveState anchor not found');
 source=source.replace(oldSave,newSave);
 const oldMain="const top=q.topLabel||pickTopLabel(q.mood);";
-const newMain="const top=q.topLabel||pickTopLabel();";
+const newMain="const top=globalThis.__balancedTopLabel||q.topLabel||pickTopLabel();";
 if(!source.includes(oldMain))throw new Error('theme balance patch: main top-label anchor not found');
 source=source.replace(oldMain,newMain);
+const oldPool="const pool=FALLBACKS.filter(f=>!dup(f.title,f.screen,f.image));";
+const newPool="const selectedPool=FALLBACKS.filter(f=>f.topLabel===globalThis.__balancedTopLabel&&!dup(f.title,f.screen,f.image));const pool=selectedPool.length?selectedPool:FALLBACKS.filter(f=>!dup(f.title,f.screen,f.image));";
+if(!source.includes(oldPool))throw new Error('theme balance patch: fallback pool anchor not found');
+source=source.replace(oldPool,newPool);
 // Legacy state has no theme labels. Seed only the two themes the channel has just been overusing,
 // so the first balanced run intentionally moves away from them; future runs use persisted history.
 const oldState="function state(){try{return JSON.parse(fs.readFileSync(STATE_FILE,'utf8'))}catch{return {runCount:0,used:[]}}}";
