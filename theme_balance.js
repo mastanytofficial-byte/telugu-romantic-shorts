@@ -7,13 +7,17 @@ const newPick=`function pickTopLabel(){const st=state();const stored=Array.isArr
 if(!source.includes(oldPick))throw new Error('theme balance patch: pickTopLabel anchor not found');
 source=source.replace(oldPick,newPick);
 const oldMake="async function makeQuote(){const prompt=`";
-const newMake="async function makeQuote(){const selectedTopLabel=pickTopLabel();const prompt=`";
+const newMake="async function makeQuote(){const selectedTopLabel=pickTopLabel();const qualityGuard='Write in natural, modern native Telugu as a Telugu speaker would actually say it. Prioritize correct Telugu grammar, natural verb-noun agreement, natural case endings, and smooth sentence flow. Do NOT translate English sentence structure word-for-word. Avoid unnecessarily Sanskritized or archaic forms when a simple natural Telugu form exists. Every sentence must sound human, clear, motivational, and polished for a Telugu YouTube Short. Before returning, silently proofread the Telugu for grammar and naturalness.';const prompt=`${qualityGuard}\\n\\n";
 if(!source.includes(oldMake))throw new Error('theme balance patch: makeQuote anchor not found');
 source=source.replace(oldMake,newMake);
 const oldPrompt="TOP_LABEL: pick the single best-fitting option from this exact list (copy it exactly, including the emoji): ${TOP_LABELS.join(' | ')}";
 const newPrompt="TOP_LABEL: use EXACTLY this preselected option (do not change it): ${selectedTopLabel}";
 if(!source.includes(oldPrompt))throw new Error('theme balance patch: TOP_LABEL prompt anchor not found');
 source=source.replace(oldPrompt,newPrompt);
+const oldValid="function validTelugu(s,min,max){const c=normalize(s);return countWords(c)>=min&&countWords(c)<=max&&latin(c).length===0&&TELUGU_RANGE.test(c)&&/[.!?…]$/.test(c)}";
+const newValid="function validTelugu(s,min,max){const c=normalize(s);const bad=[/\\b(?:సహనమును|ప్రయత్నమును|ఆత్మవిశ్వాసమును)\\s+(?:పెడతాయి|పెడుతుంది|పెడతాడు|పెడుతుంది)/i,/\\b(?:బలాన్ని|ధైర్యాన్ని|నమ్మకాన్ని|సహనాన్ని)\\s+(?:పెడతాయి|పెడుతుంది|పెడతాడు)/i,/\\bమనకు\\s+బలాన్ని\\s+పెడ/i,/\\bవిజయానికి\\s+దారి\\s+తీస్తుంది/i.test?null:null];const blocked=bad.filter(Boolean).some(re=>re.test(c));return countWords(c)>=min&&countWords(c)<=max&&latin(c).length===0&&TELUGU_RANGE.test(c)&&/[.!?…]$/.test(c)&&!blocked}";
+if(!source.includes(oldValid))throw new Error('theme balance patch: validTelugu anchor not found');
+source=source.replace(oldValid,newValid);
 const oldSave="function saveState(t,s,i,bgId){const st=state(),usedBg=bgId?[...(st.usedBg||[]),String(bgId)].slice(-40):(st.usedBg||[]);fs.writeFileSync(STATE_FILE,JSON.stringify({runCount:(st.runCount||0)+1,lastTitle:t,lastDate:new Date().toISOString(),used:[...(st.used||[]),{title:t,screen:s,image:i}],usedBg},null,2))}";
 const newSave="function saveState(t,s,i,bgId){const st=state(),usedBg=bgId?[...(st.usedBg||[]),String(bgId)].slice(-40):(st.usedBg||[]),label=globalThis.__balancedTopLabel||'';const themeHistory=[...(st.themeHistory||[]),...(label?[label]:[])].slice(-40);fs.writeFileSync(STATE_FILE,JSON.stringify({runCount:(st.runCount||0)+1,lastTitle:t,lastDate:new Date().toISOString(),used:[...(st.used||[]),{title:t,screen:s,image:i,topLabel:label}],usedBg,themeHistory},null,2))}";
 if(!source.includes(oldSave))throw new Error('theme balance patch: saveState anchor not found');
