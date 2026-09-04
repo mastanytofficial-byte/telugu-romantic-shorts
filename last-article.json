@@ -1,7 +1,7 @@
 {
-  "runCount": 80,
-  "lastTitle": "సవాళ్ల పథం",
-  "lastDate": "2026-09-04T12:14:50.117Z",
+  "runCount": 81,
+  "lastTitle": "సాహసపు ప్రయాణం",
+  "lastDate": "2026-09-04T15:23:35.567Z",
   "used": [
     {
       "title": "చిన్న ప్రయత్నం, పెద్ద ఫలం",
@@ -368,12 +368,24 @@
       "title": "సవాళ్ల పథం",
       "screen": "సవాళ్లు ఎదురైనప్పుడే, మనము బలం కనుగొంటాం, అది మనకు ముందుకు సాగడానికి ధైర్యం ఇస్తుంది, అప్పుడే మన ప్రయాణం ఇప్పుడే ప్రకాశిస్తుంది, ప్రతి చర్య కాంతి వైపు కదులుతుంది.",
       "image": "vertical cinematic image of a lone individual standing on a cliff at sunrise, looking over a vast ocean horizon, dramatic lighting, high dynamic range, 9:16 format"
+    },
+    {
+      "title": "సాహసపు ప్రయాణం",
+      "screen": "ప్రతి సారి అప్పుడే మన ప్రయత్నాలు మనలో సాహసమును పుట్టిస్తాయి, ఆ సాహసము మనకు బలంనిస్తుంది, అది విజయంకు దారి తీస్తుంది.",
+      "image": "A lone individual standing at the edge of a misty cliff at sunrise, looking out over a vast valley, cinematic 9:16 vertical composition, soft golden light, dramatic sky, subtle reflection in water, high resolution",
+      "topLabel": "LIFE LESSON 💡"
     }
   ],
   "usedBg": [
     "27636293",
     "26536165",
     "28074817",
-    "38288040"
+    "38288040",
+    "4762374"
+  ],
+  "themeHistory": [
+    "MINDSET 🧠",
+    "INNER POWER 🔥",
+    "LIFE LESSON 💡"
   ]
 }
