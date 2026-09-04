@@ -52,7 +52,9 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Verify source
-        run: node --check wisdom_simple.js
+        run: |
+          node --check wisdom_simple.js
+          node --check theme_balance.js
 
       - name: Generate and upload (private, pending review)
         timeout-minutes: 15
@@ -62,7 +64,7 @@ jobs:
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
-        run: node wisdom_simple.js 2>&1 | tee /tmp/run.log
+        run: node theme_balance.js 2>&1 | tee /tmp/run.log
 
       - name: Commit debug log (orphan branch)
         if: always()
