@@ -1,7 +1,7 @@
 {
-  "runCount": 76,
-  "lastTitle": "నూతన ప్రయాణం",
-  "lastDate": "2026-09-04T09:48:29.933Z",
+  "runCount": 77,
+  "lastTitle": "ఆశతో ముందుకు",
+  "lastDate": "2026-09-04T10:22:02.759Z",
   "used": [
     {
       "title": "చిన్న ప్రయత్నం, పెద్ద ఫలం",
@@ -348,6 +348,14 @@
       "title": "నూతన ప్రయాణం",
       "screen": "ప్రతి రోజూ మనం కొత్తగా ప్రారంభించవచ్చు, మనలోని ఉత్సాహం మనకు ముందుకు వెళ్ళే శక్తి ఇస్తుంది. ఆ రోజు ఎప్పుడూ అర్థం కాని విషయాలు కూడా మనకు కొత్త మార్గాలు చూపుతాయి.",
       "image": "A lone traveler standing at the edge of a misty valley at dawn, silhouette against a soft sunrise, cinematic 9:16 vertical composition"
+    },
+    {
+      "title": "ఆశతో ముందుకు",
+      "screen": "స్వప్నం చూసి నిలిచే మనిషి కాదు, ఆశ తో ముందుకు సాగితేనే నిజమైన విజయం వస్తుంది, ప్రతి అడుగులో ఒక కొత్త అవకాశాన్ని కనుగొనాలి, అది మనలను ముందుకు తీసుకెళ్తుంది.",
+      "image": "a lone person standing at the edge of a cliff at sunrise, looking out over a misty valley, cinematic vertical composition, soft warm light, inspirational mood"
     }
+  ],
+  "usedBg": [
+    "27636293"
   ]
 }
