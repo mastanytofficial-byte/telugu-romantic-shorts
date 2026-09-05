@@ -1,7 +1,7 @@
 {
-  "runCount": 85,
-  "lastTitle": "ఆశల మలుపు",
-  "lastDate": "2026-09-04T19:27:33.581Z",
+  "runCount": 86,
+  "lastTitle": "అంతరంగ శక్తి",
+  "lastDate": "2026-09-05T05:14:48.011Z",
   "used": [
     {
       "title": "చిన్న ప్రయత్నం, పెద్ద ఫలం",
@@ -398,6 +398,12 @@
       "screen": "అసమర్థత అనిపించినప్పుడు, మనం సహనం పెంచుకుంటాం, ఆ సహనం మనకు సాహసాన్ని ఇస్తుంది, ఆ సాహసంతో మనం కలలను నిజం చేస్తాం.",
       "image": "A young woman standing at a quiet crossroads in a misty dawn, holding a small lantern, looking determined, cinematic vertical composition, soft warm light illuminating her face, subtle reflection of sunrise behind her, realistic style",
       "topLabel": "TRUE WORDS ⏳"
+    },
+    {
+      "title": "అంతరంగ శక్తి",
+      "screen": "ప్రతి సవాలు నీలోని ఆసక్తిను మేల్కొలుపుతుంది, ఆ ఆసక్తి పెరిగినప్పుడు నీవు కొత్త విజయంను సృష్టిస్తావు, అప్పుడు జీవితం మరింత సంతృప్తిను ఇస్తుంది.",
+      "image": "a young adult standing on a misty cliff at sunrise, wind gently lifting hair, determined expression, golden light bathing the scene, cinematic vertical 9:16 composition, shallow depth of field, high contrast, no text",
+      "topLabel": "REALITY OF LIFE 💯"
     }
   ],
   "usedBg": [
@@ -409,7 +415,8 @@
     "35451292",
     "30512846",
     "27694678",
-    "30068609"
+    "30068609",
+    "10352141"
   ],
   "themeHistory": [
     "MINDSET 🧠",
@@ -418,6 +425,7 @@
     "STAY CALM 🍃",
     "KEEP GROWING 🌱",
     "NEW BEGINNING 🌅",
-    "TRUE WORDS ⏳"
+    "TRUE WORDS ⏳",
+    "REALITY OF LIFE 💯"
   ]
 }
